@@ -39,6 +39,7 @@ import androidx.compose.material3.TextFieldDefaults
 
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -86,6 +87,19 @@ fun CategoryScreen() {
     // Category list
     var categories by remember { mutableStateOf(listOf<Category>()) }
 
+    val defaultCategories = listOf(
+        Category(name = "Art", icon = R.drawable.img1, color = Color(0xFFE57373), entries = 0),
+        Category(name = "Meditation", icon = R.drawable.img2, color = Color(0xFFBA68C8), entries = 0),
+        Category(name = "Study", icon = R.drawable.img3, color = Color(0xFF64B5F6), entries = 0),
+        Category(name = "Fitness", icon = R.drawable.img6, color = Color(0xFF4DB6AC), entries = 0),
+        Category(name = "Swim", icon = R.drawable.img5, color = Color(0xFFFFD54F), entries = 0),
+        Category(name = "Others", icon = R.drawable.img5, color = Color(0xFFAED581), entries = 0),
+
+    )
+
+    val categoriesToShow = remember { mutableStateListOf<Category>().apply { addAll(defaultCategories) } }
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -116,7 +130,7 @@ fun CategoryScreen() {
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // HORIZONTAL LAZYROW OF CATEGORIES
+
         if (categories.isNotEmpty()) {
             LazyRow(
                 modifier = Modifier
@@ -168,6 +182,66 @@ fun CategoryScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
         }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Text(
+            text = "Default categories",
+            fontSize = 14.sp,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            modifier = Modifier.padding(top = 20.dp, start = 10.dp)
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(categoriesToShow) { category ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .width(80.dp)
+                        .clickable { /* handle click */ }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape)
+                            .background(category.color),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = category.icon),
+                            contentDescription = null,
+                            modifier = Modifier.size(28.dp),
+                            colorFilter = ColorFilter.tint(Color.White)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = category.name,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Text(
+                        text = "${category.entries} entries",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                }
+            }
+        }
+
+
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -323,7 +397,7 @@ fun BottomSheetCategory(
                 )
             }
 
-            Divider(modifier = Modifier.padding(vertical = 10.dp))
+            MildDivider()
 
             // CATEGORY NAME
             CategoryRow(
@@ -337,7 +411,7 @@ fun BottomSheetCategory(
                 }
             )
 
-            Divider(modifier = Modifier.padding(vertical = 10.dp))
+            MildDivider()
 
             // CATEGORY ICON
             CategoryRow(
@@ -351,7 +425,8 @@ fun BottomSheetCategory(
                 }
             )
 
-            Divider(modifier = Modifier.padding(vertical = 10.dp))
+            MildDivider()
+
 
             // CATEGORY COLOR
             CategoryRow(
@@ -365,7 +440,8 @@ fun BottomSheetCategory(
                 }
             )
 
-            Divider(modifier = Modifier.padding(vertical = 10.dp))
+            MildDivider()
+
 
             // CREATE CATEGORY BUTTON
             Text(
@@ -563,13 +639,20 @@ fun CategoryColorDialog(
         },
         text = {
 
-            // List of 20 colors inside the dialog
             val categoryColors = listOf(
                 Color(0xFF263238), Color(0xFF37474F), Color(0xFF455A64), Color(0xFF546E7A),
                 Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF388E3C), Color(0xFF43A047),
                 Color(0xFF004D40), Color(0xFF00695C), Color(0xFF00796B), Color(0xFF00897B),
                 Color(0xFF311B92), Color(0xFF4527A0), Color(0xFF512DA8), Color(0xFF673AB7),
-                Color(0xFFB71C1C), Color(0xFFC62828), Color(0xFFD32F2F), Color(0xFFE53935)
+                Color(0xFFB71C1C), Color(0xFFC62828), Color(0xFFD32F2F), Color(0xFFE53935),
+                Color(0xFFAED581), Color(0xFF4FC3F7), Color(0xFFFF8A65), Color(0xFF90A4AE),
+                Color(0xFFE57373), Color(0xFFBA68C8), Color(0xFF64B5F6), Color(0xFF4DB6AC),
+                Color(0xFFFFD54F), Color(0xFFA1887F), Color(0xFFE1BEE7), Color(0xFFD1C4E9),
+                Color(0xFFC5CAE9), Color(0xFFBBDEFB), Color(0xFFB3E5FC), Color(0xFFB2EBF2),
+                Color(0xFFB2DFDB), Color(0xFFC8E6C9), Color(0xFFDCEDC8), Color(0xFFF0F4C3),
+                Color(0xFFFFF9C4), Color(0xFFFFECB3), Color(0xFFFFE0B2), Color(0xFFFFCCBC),
+                Color(0xFFD7CCC8), Color(0xFFCFD8DC), Color(0xFF90A4AE), Color(0xFFB0BEC5),
+                Color(0xFFFFAB91), Color(0xFFFF7043)
             )
 
 
