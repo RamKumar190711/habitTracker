@@ -1,0 +1,612 @@
+package com.toqsoft.habittracker.presentation
+
+import androidx.compose.runtime.Composable
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
+
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.toqsoft.habittracker.R
+import com.toqsoft.habittracker.domain.model.Category
+import com.toqsoft.habittracker.ui.theme.MeronSoft
+import com.toqsoft.habittracker.ui.theme.MeronWarm
+import kotlinx.coroutines.launch
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CategoryScreen() {
+
+    val scope = rememberCoroutineScope()
+
+    // Bottom sheet visibility
+    var showBottomSheet by remember { mutableStateOf(false) }
+
+    // Dialogs
+    var showNameDialog by remember { mutableStateOf(false) }
+    var showIconDialog by remember { mutableStateOf(false) }
+    var showColorDialog by remember { mutableStateOf(false) }
+
+    // Bottom sheet state
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    // Input state
+    var categoryName by remember { mutableStateOf("") }
+    var selectedIcon by remember { mutableStateOf<Int?>(null) }
+    var selectedColor by remember { mutableStateOf<Color?>(null) }
+
+    // Category list
+    var categories by remember { mutableStateOf(listOf<Category>()) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(WindowInsets.safeContent.asPaddingValues())
+    ) {
+        // HEADER
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Image(
+                painter = painterResource(id = R.drawable.back),
+                contentDescription = "back",
+                modifier = Modifier.size(20.dp),
+                colorFilter = ColorFilter.tint(MeronSoft)
+            )
+            Text(
+                text = "Categories",
+                fontSize = 14.sp,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                modifier = Modifier.padding(start = 10.dp)
+            )
+        }
+
+        Text(
+            text = "Custom categories",
+            fontSize = 14.sp,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            modifier = Modifier.padding(top = 20.dp, start = 10.dp)
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // HORIZONTAL LAZYROW OF CATEGORIES
+        if (categories.isNotEmpty()) {
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(categories) { category ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .width(80.dp)
+                            .clickable { /* handle click */ }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(60.dp)
+                                .clip(CircleShape)
+                                .background(category.color ?: MeronSoft),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = category.icon ?: R.drawable.category),
+                                contentDescription = null,
+                                modifier = Modifier.size(28.dp),
+                                colorFilter = ColorFilter.tint(Color.White)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = category.name,
+                            fontSize = 14.sp,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Text(
+                            text = "${category.entries} entries",
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // NEW CATEGORY BUTTON
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 10.dp)
+                .height(55.dp)
+                .background(MeronWarm, RoundedCornerShape(12.dp))
+                .clickable {
+                    showBottomSheet = true
+                    scope.launch { sheetState.show() }
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "New Category",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            )
+        }
+    }
+
+    // ---------------- BOTTOM SHEET -----------------
+    if (showBottomSheet) {
+        BottomSheetCategory(
+            sheetState = sheetState,
+            categoryName = categoryName,
+            selectedIcon = selectedIcon,
+            selectedColor = selectedColor,
+            categories = categories,
+            onAddCategory = { newCategory ->
+                categories = categories + newCategory
+            },
+            onDismiss = { showBottomSheet = false },
+            onOpenCateName = { showNameDialog = true },
+            onOpenCateIcon = { showIconDialog = true },
+            onOpenCateColor = { showColorDialog = true }
+        )
+    }
+
+    // ---------------- DIALOGS -----------------
+    if (showNameDialog) {
+        CategoryNameDialog(
+            name = categoryName,
+            onNameChange = { categoryName = it },
+            onCancel = {
+                showNameDialog = false
+                showBottomSheet = true
+                scope.launch { sheetState.show() }
+            },
+            onConfirm = {
+                showNameDialog = false
+                showBottomSheet = true
+                scope.launch { sheetState.show() }
+            }
+        )
+    }
+
+    if (showIconDialog) {
+        CategoryIconDialog(
+            selectedIcon = selectedIcon,
+            onIconSelected = {
+                selectedIcon = it
+                showIconDialog = false
+                showBottomSheet = true
+                scope.launch { sheetState.show() }
+            },
+            onCancel = {
+                showIconDialog = false
+                showBottomSheet = true
+                scope.launch { sheetState.show() }
+            }
+        )
+    }
+
+    if (showColorDialog) {
+        CategoryColorDialog(
+            selectedColor = selectedColor,
+            onColorSelected = {
+                selectedColor = it
+                showColorDialog = false
+                showBottomSheet = true
+                scope.launch { sheetState.show() }
+            },
+            onCancel = {
+                showColorDialog = false
+                showBottomSheet = true
+                scope.launch { sheetState.show() }
+            }
+        )
+    }
+}
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BottomSheetCategory(
+    sheetState: SheetState,
+    categoryName: String,
+    selectedIcon: Int?,
+    selectedColor: Color?,
+    categories: List<Category>,
+    onAddCategory: (Category) -> Unit,
+    onDismiss: () -> Unit,
+    onOpenCateName: () -> Unit,
+    onOpenCateIcon: () -> Unit,
+    onOpenCateColor: () -> Unit
+) {
+    val scope = rememberCoroutineScope()
+    val circleColor = selectedColor ?: MeronSoft
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = Color.White,
+    ) {
+        Column(
+            modifier = Modifier.padding(
+                top = 35.dp, bottom = 35.dp,
+                start = 25.dp, end = 25.dp
+            )
+        ) {
+            // HEADER
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .background(circleColor, CircleShape)
+                )
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                Text(
+                    text = categoryName.ifEmpty { "New Category" },
+                    fontSize = 18.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Image(
+                    painter = painterResource(id = selectedIcon ?: R.drawable.category),
+                    contentDescription = null,
+                    modifier = Modifier.size(30.dp),
+                    colorFilter = ColorFilter.tint(circleColor)
+                )
+            }
+
+            Divider(modifier = Modifier.padding(vertical = 10.dp))
+
+            // CATEGORY NAME
+            CategoryRow(
+                icon = R.drawable.cate_name,
+                text = "Category Name",
+                onClick = {
+                    scope.launch {
+                        sheetState.hide()
+                        onOpenCateName()
+                    }
+                }
+            )
+
+            Divider(modifier = Modifier.padding(vertical = 10.dp))
+
+            // CATEGORY ICON
+            CategoryRow(
+                icon = R.drawable.cate_icon,
+                text = "Category Icon",
+                onClick = {
+                    scope.launch {
+                        sheetState.hide()
+                        onOpenCateIcon()
+                    }
+                }
+            )
+
+            Divider(modifier = Modifier.padding(vertical = 10.dp))
+
+            // CATEGORY COLOR
+            CategoryRow(
+                icon = R.drawable.cate_color,
+                text = "Category Color",
+                onClick = {
+                    scope.launch {
+                        sheetState.hide()
+                        onOpenCateColor()
+                    }
+                }
+            )
+
+            Divider(modifier = Modifier.padding(vertical = 10.dp))
+
+            // CREATE CATEGORY BUTTON
+            Text(
+                text = "Create Category",
+                fontSize = 18.sp,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                color = MeronWarm,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        if (categoryName.isNotEmpty()) {
+                            onAddCategory(
+                                Category(
+                                    name = categoryName,
+                                    icon = selectedIcon ?: R.drawable.category,
+                                    color = selectedColor ?: MeronSoft,
+                                    entries = 0
+                                )
+                            )
+                            // Reset selections
+                            onDismiss()
+                        }
+                    }
+                    .padding(vertical = 10.dp)
+            )
+        }
+    }
+}
+
+
+@Composable
+fun CategoryRow(
+    icon: Int,
+    text: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(id = icon),
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+
+            )
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Text(
+            text = text,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Normal
+        )
+    }
+}
+
+@Composable
+fun CategoryNameDialog(
+    name: String,
+    onNameChange: (String) -> Unit,
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onCancel,
+        containerColor = Color.White,
+        title = {},
+        text = {
+            OutlinedTextField(
+                value = name,
+                onValueChange = onNameChange,
+                singleLine = true,
+                label = { Text("Category Name") },
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = MeronWarm,
+                    unfocusedIndicatorColor = MeronWarm,
+                    focusedLabelColor = MeronWarm,
+                    cursorColor = MeronWarm,
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White
+                )
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("OK", fontWeight = FontWeight.Bold, color = MeronWarm)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onCancel) {
+                Text("Cancel", fontWeight = FontWeight.Bold, color = Color.Black)
+            }
+        }
+    )
+}
+
+@Composable
+fun CategoryIconDialog(
+    selectedIcon: Int?,                  // currently selected icon
+    onIconSelected: (Int) -> Unit,       // callback when user selects
+    onCancel: () -> Unit                  // callback when dialog closes
+) {
+
+    AlertDialog(
+        onDismissRequest = onCancel,
+        containerColor = Color.White,
+        title = {
+            Text(
+                text = "Category Icon",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+        },
+        text = {
+
+            // Your 12 icons
+            val icons = listOf(
+                R.drawable.img1,
+                R.drawable.img2,
+                R.drawable.img3,
+                R.drawable.img4,
+                R.drawable.img5,
+                R.drawable.img6,
+                R.drawable.img7,
+                R.drawable.img8,
+                R.drawable.img9,
+                R.drawable.img10,
+                R.drawable.img11,
+                R.drawable.img12
+            )
+
+            // Grid of icons
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(4),
+                contentPadding = PaddingValues(8.dp),
+                modifier = Modifier.height(220.dp)   // adjust height as needed
+            ) {
+                items(icons) { iconRes ->    // iconRes is Int (drawable id)
+
+                    val isSelected = iconRes == selectedIcon
+
+                    Box(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(50.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (isSelected) MeronWarm.copy(0.15f)
+                                else Color(0xFFF5F5F5)
+                            )
+                            .clickable { onIconSelected(iconRes) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = iconRes),
+                            contentDescription = "icon",
+                            modifier = Modifier.size(28.dp),
+                            colorFilter = if (isSelected)
+                                ColorFilter.tint(MeronWarm)
+                            else ColorFilter.tint(Color.Black)
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {},   // no confirm button needed, selection is instant
+        dismissButton = {
+            TextButton(onClick = onCancel) {
+                Text("Close", fontWeight = FontWeight.Bold)
+            }
+        }
+    )
+}
+
+@Composable
+fun CategoryColorDialog(
+    selectedColor: Color?,
+    onColorSelected: (Color) -> Unit,
+    onCancel: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onCancel,
+        containerColor = Color.White,
+        title = {
+            Text(
+                text = "Choose Category Color",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+        },
+        text = {
+
+            // List of 20 colors inside the dialog
+            val categoryColors = listOf(
+                Color(0xFF263238), Color(0xFF37474F), Color(0xFF455A64), Color(0xFF546E7A),
+                Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF388E3C), Color(0xFF43A047),
+                Color(0xFF004D40), Color(0xFF00695C), Color(0xFF00796B), Color(0xFF00897B),
+                Color(0xFF311B92), Color(0xFF4527A0), Color(0xFF512DA8), Color(0xFF673AB7),
+                Color(0xFFB71C1C), Color(0xFFC62828), Color(0xFFD32F2F), Color(0xFFE53935)
+            )
+
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(5),
+                contentPadding = PaddingValues(8.dp),
+                modifier = Modifier.height(220.dp)
+            ) {
+                items(categoryColors) { color ->
+
+                    val isSelected = color == selectedColor
+
+                    Box(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                            .border(
+                                width = if (isSelected) 3.dp else 0.dp,
+                                color = if (isSelected) MeronWarm else Color.Transparent,
+                                shape = CircleShape
+                            )
+                            .clickable { onColorSelected(color) },
+
+                    )
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onCancel) {
+                Text("Close", fontWeight = FontWeight.Bold)
+            }
+        }
+    )
+}
+
+
+
