@@ -24,8 +24,11 @@ import com.toqsoft.habittracker.ui.theme.MeronWarm
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
+import java.text.SimpleDateFormat
 
 import java.time.DayOfWeek
+import java.util.Date
+import java.util.Locale
 import kotlin.time.ExperimentalTime
 
 
@@ -132,6 +135,10 @@ fun Calendar(
             }
         }
     }
+}
+fun formatDate1(millis: Long): String {
+    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    return formatter.format(Date(millis))
 }
 
 

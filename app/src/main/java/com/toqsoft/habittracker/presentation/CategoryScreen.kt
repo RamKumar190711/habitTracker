@@ -55,8 +55,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.toqsoft.habittracker.R
 import com.toqsoft.habittracker.domain.model.Category
+import com.toqsoft.habittracker.presentation.viewmodel.CategoryViewModel
 import com.toqsoft.habittracker.ui.theme.MeronSoft
 import com.toqsoft.habittracker.ui.theme.MeronWarm
 import kotlinx.coroutines.launch
@@ -64,7 +66,9 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CategoryScreen() {
+fun CategoryScreen(
+    viewModel: CategoryViewModel = viewModel()  // <-- Shared ViewModel
+) {
 
     val scope = rememberCoroutineScope()
 
@@ -79,32 +83,22 @@ fun CategoryScreen() {
     // Bottom sheet state
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    // Input state
+    // Input state for new category
     var categoryName by remember { mutableStateOf("") }
     var selectedIcon by remember { mutableStateOf<Int?>(null) }
     var selectedColor by remember { mutableStateOf<Color?>(null) }
 
-    // Category list
-    var categories by remember { mutableStateOf(listOf<Category>()) }
-
-    val defaultCategories = listOf(
-        Category(name = "Art", icon = R.drawable.img1, color = Color(0xFFE57373), entries = 0),
-        Category(name = "Meditation", icon = R.drawable.img2, color = Color(0xFFBA68C8), entries = 0),
-        Category(name = "Study", icon = R.drawable.img3, color = Color(0xFF64B5F6), entries = 0),
-        Category(name = "Fitness", icon = R.drawable.img6, color = Color(0xFF4DB6AC), entries = 0),
-        Category(name = "Swim", icon = R.drawable.img5, color = Color(0xFFFFD54F), entries = 0),
-        Category(name = "Others", icon = R.drawable.img5, color = Color(0xFFAED581), entries = 0),
-
-    )
-
-    val categoriesToShow = remember { mutableStateListOf<Category>().apply { addAll(defaultCategories) } }
-
+    // --- SHARED ViewModel State ---
+    val customCategories = viewModel.customCategories
+    val defaultCategories = viewModel.defaultCategories
+    // ------------------------------
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(WindowInsets.safeContent.asPaddingValues())
     ) {
+
         // HEADER
         Row(modifier = Modifier.fillMaxWidth()) {
             Image(
@@ -116,29 +110,29 @@ fun CategoryScreen() {
             Text(
                 text = "Categories",
                 fontSize = 14.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 10.dp)
             )
         }
 
+        // CUSTOM CATEGORIES
         Text(
             text = "Custom categories",
             fontSize = 14.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 20.dp, start = 10.dp)
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
-
-        if (categories.isNotEmpty()) {
+        if (customCategories.isNotEmpty()) {
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(categories) { category ->
+                items(customCategories) { category ->
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
@@ -165,7 +159,7 @@ fun CategoryScreen() {
                         Text(
                             text = category.name,
                             fontSize = 14.sp,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             textAlign = TextAlign.Center
@@ -185,12 +179,14 @@ fun CategoryScreen() {
 
         Spacer(modifier = Modifier.height(10.dp))
 
+        // DEFAULT CATEGORIES
         Text(
             text = "Default categories",
             fontSize = 14.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 20.dp, start = 10.dp)
         )
+
         Spacer(modifier = Modifier.height(10.dp))
 
         LazyRow(
@@ -199,7 +195,7 @@ fun CategoryScreen() {
                 .padding(horizontal = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(categoriesToShow) { category ->
+            items(defaultCategories) { category ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
@@ -241,8 +237,6 @@ fun CategoryScreen() {
             }
         }
 
-
-
         Spacer(modifier = Modifier.weight(1f))
 
         // NEW CATEGORY BUTTON
@@ -262,7 +256,7 @@ fun CategoryScreen() {
                 text = "New Category",
                 color = Color.White,
                 fontSize = 16.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                fontWeight = FontWeight.Bold
             )
         }
     }
@@ -274,9 +268,9 @@ fun CategoryScreen() {
             categoryName = categoryName,
             selectedIcon = selectedIcon,
             selectedColor = selectedColor,
-            categories = categories,
+            categories = customCategories,
             onAddCategory = { newCategory ->
-                categories = categories + newCategory
+                viewModel.addCustomCategory(newCategory)    // <-- SAVE TO VIEWMODEL
             },
             onDismiss = { showBottomSheet = false },
             onOpenCateName = { showNameDialog = true },
@@ -337,6 +331,7 @@ fun CategoryScreen() {
         )
     }
 }
+
 
 
 
@@ -691,5 +686,130 @@ fun CategoryColorDialog(
     )
 }
 
+@Composable
+fun CategoryDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    customCategories: List<Category>,
+    defaultCategories: List<Category>,
+    onManageCategories: () -> Unit,
+    onCategorySelected: (Category) -> Unit
+) {
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            confirmButton = {},
+            dismissButton = {},
+            containerColor = Color.White,
+            text = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Custom Categories",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
 
+                    if (customCategories.isNotEmpty()) {
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        ) {
+                            items(customCategories) { category ->
+                                CategoryItem(category) {
+                                    onCategorySelected(category)
+                                    onDismiss()
+                                }
+                            }
+                        }
+                    } else {
+                        Text(
+                            text = "No custom categories",
+                            color = Color.Gray,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
 
+                    Text(
+                        text = "Default Categories",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        items(defaultCategories) { category ->
+                            CategoryItem(category) {
+                                onCategorySelected(category)
+                                onDismiss()
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Manage Categories Button
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(45.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFFE0E0E0))
+                            .clickable {
+                                onManageCategories()
+                                onDismiss()
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Manage Categories",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                    }
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun CategoryItem(category: Category, onClick: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .width(80.dp)
+            .clickable { onClick() }
+    ) {
+        Box(
+            modifier = Modifier
+                .size(60.dp)
+                .clip(CircleShape)
+                .background(category.color ?: Color.LightGray),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = category.icon ?: R.drawable.category),
+                contentDescription = null,
+                modifier = Modifier.size(28.dp),
+                colorFilter = ColorFilter.tint(Color.White)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = category.name,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center
+        )
+
+        Text(
+            text = "${category.entries} entries",
+            fontSize = 12.sp,
+            color = Color.Gray
+        )
+    }
+}
