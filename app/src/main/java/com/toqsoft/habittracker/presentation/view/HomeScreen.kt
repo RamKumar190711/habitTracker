@@ -1,5 +1,7 @@
-package com.toqsoft.habittracker.presentation
+package com.toqsoft.habittracker.presentation.view
 
+import android.graphics.Paint
+import android.graphics.Rect
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
@@ -8,7 +10,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -70,14 +71,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -96,11 +95,9 @@ import com.toqsoft.habittracker.ui.theme.MeronLight
 import com.toqsoft.habittracker.ui.theme.MeronSoft
 import com.toqsoft.habittracker.ui.theme.MeronUltraLight
 import com.toqsoft.habittracker.ui.theme.MeronWarm
-import kotlinx.datetime.TimeZone
 
 import kotlinx.datetime.toKotlinLocalDate
 import java.time.LocalDate
-import java.util.Calendar
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -1700,14 +1697,14 @@ fun TimeClockSelector(
                 }
 
                 drawContext.canvas.nativeCanvas.apply {
-                    val paint = android.graphics.Paint().apply {
+                    val paint = Paint().apply {
                         textSize = numberSize
                         color = android.graphics.Color.parseColor("#5A3A3A")
-                        textAlign = android.graphics.Paint.Align.CENTER
+                        textAlign = Paint.Align.CENTER
                         isAntiAlias = true
                     }
 
-                    val bounds = android.graphics.Rect()
+                    val bounds = Rect()
                     paint.getTextBounds(n.toString(), 0, n.toString().length, bounds)
                     val textHeight = bounds.height()
 

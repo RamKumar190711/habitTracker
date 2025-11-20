@@ -1,4 +1,4 @@
-package com.toqsoft.habittracker.presentation
+package com.toqsoft.habittracker.presentation.view
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -29,7 +29,6 @@ import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.util.Date
 import java.util.Locale
-import kotlin.time.ExperimentalTime
 
 
 data class DateItem(
@@ -41,8 +40,8 @@ data class DateItem(
 
 fun generateDates(startYear: Int, endYear: Int): List<DateItem> {
     val list = mutableListOf<DateItem>()
-    var current = kotlinx.datetime.LocalDate(startYear, 1, 1)
-    val end = kotlinx.datetime.LocalDate(endYear, 12, 31)
+    var current = LocalDate(startYear, 1, 1)
+    val end = LocalDate(endYear, 12, 31)
 
     val dayNames = mapOf(
         DayOfWeek.MONDAY to "Mon",
@@ -143,7 +142,7 @@ fun formatDate1(millis: Long): String {
 
 
 
-fun formatDate(date: kotlinx.datetime.LocalDate): String {
+fun formatDate(date: LocalDate): String {
     val months = listOf(
         "Jan","Feb","Mar","Apr","May","Jun",
         "Jul","Aug","Sep","Oct","Nov","Dec"

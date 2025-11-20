@@ -1,4 +1,4 @@
-package com.toqsoft.habittracker.presentation
+package com.toqsoft.habittracker.presentation.view
 
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.Image
@@ -28,7 +28,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -39,7 +38,6 @@ import androidx.compose.material3.TextFieldDefaults
 
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -379,7 +377,7 @@ fun BottomSheetCategory(
                 Text(
                     text = categoryName.ifEmpty { "New Category" },
                     fontSize = 18.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -442,7 +440,7 @@ fun BottomSheetCategory(
             Text(
                 text = "Create Category",
                 fontSize = 18.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 color = MeronWarm,
                 modifier = Modifier
