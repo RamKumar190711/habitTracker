@@ -1,5 +1,6 @@
 package com.toqsoft.habittracker.presentation.view
 
+import android.graphics.Insets.add
 import android.graphics.Paint
 import android.graphics.Rect
 import android.os.Build
@@ -13,8 +14,10 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -56,6 +59,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -75,10 +79,12 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.center
@@ -87,17 +93,25 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.toqsoft.habittracker.R
+import com.toqsoft.habittracker.data.database.TaskDatabase
+import com.toqsoft.habittracker.data.model.TaskEntity
 import com.toqsoft.habittracker.domain.model.Category
 import com.toqsoft.habittracker.domain.model.ReminderData
 import com.toqsoft.habittracker.presentation.viewmodel.CategoryViewModel
 import com.toqsoft.habittracker.presentation.viewmodel.ReminderViewModel
+import com.toqsoft.habittracker.presentation.viewmodel.TaskViewModel
+import com.toqsoft.habittracker.presentation.viewmodel.TaskViewModelFactory
 import com.toqsoft.habittracker.ui.theme.MeronLight
 import com.toqsoft.habittracker.ui.theme.MeronSoft
 import com.toqsoft.habittracker.ui.theme.MeronUltraLight
 import com.toqsoft.habittracker.ui.theme.MeronWarm
 
 import kotlinx.datetime.toKotlinLocalDate
+import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -108,65 +122,69 @@ import kotlin.math.sin
 @Composable
 fun HomeScreen(navController: NavHostController) {
     var selectedRoute by remember { mutableStateOf(BottomNavItem.Today.route) }
-
     var isClick by remember { mutableStateOf(false) }
 
     val today = LocalDate.now().toKotlinLocalDate()
     val selectedDay = remember { mutableStateOf(today.dayOfMonth) }
 
+    val showScaffoldBars = selectedRoute != BottomNavItem.Timer.route
+
     Scaffold(
         topBar = {
-            HabitTrackerTopBar(
-                currentDate = formatDate(
-                    kotlinx.datetime.LocalDate(today.year, today.monthNumber, selectedDay.value)
+            if (showScaffoldBars) {
+                HabitTrackerTopBar(
+                    currentDate = formatDate(
+                        kotlinx.datetime.LocalDate(today.year, today.monthNumber, selectedDay.value)
+                    )
                 )
-            )
+            }
         },
         floatingActionButton = {
-            GradientFAB(
-                onClick = {  isClick = !isClick },
-                iconRes = R.drawable.add // pass PNG resource here
-            )
+            if (showScaffoldBars) {
+                GradientFAB(
+                    onClick = { isClick = !isClick },
+                    iconRes = R.drawable.add
+                )
+            }
         },
         bottomBar = {
-            BottomNavigationBar(
-                items = listOf(
-                    BottomNavItem.Today,
-                    BottomNavItem.Habits,
-                    BottomNavItem.Tasks,
-                    BottomNavItem.Category,
-                    BottomNavItem.Timer
-                ),
-                selectedRoute = selectedRoute,
-                onItemSelected = { selectedRoute = it.route }
-            )
+            if (showScaffoldBars) {
+                BottomNavigationBar(
+                    items = listOf(
+                        BottomNavItem.Today,
+                        BottomNavItem.Habits,
+                        BottomNavItem.Tasks,
+                        BottomNavItem.Category,
+                        BottomNavItem.Timer
+                    ),
+                    selectedRoute = selectedRoute,
+                    onItemSelected = { selectedRoute = it.route }
+                )
+            }
         },
         containerColor = Color.White
-
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedRoute) {
-                BottomNavItem.Today.route -> TodayScreen() // Show TodayScreen with image
-//                BottomNavItem.Habits.route -> HabitsScreen()
-//                BottomNavItem.Tasks.route -> TasksScreen()
-//                BottomNavItem.Category.route -> CategoryScreen()
-//                BottomNavItem.Timer.route -> TimerScreen()
+                BottomNavItem.Today.route -> TodayScreen()
+                // BottomNavItem.Habits.route -> HabitsScreen()
+                // BottomNavItem.Tasks.route -> TasksScreen()
+                // BottomNavItem.Category.route -> CategoryScreen()
+                BottomNavItem.Timer.route -> TimerScreen()
+            }
+
+            if (isClick && showScaffoldBars) {
+                ModalBottomSheetExample(
+                    onDismiss = { isClick = false },
+                    onTaskSelected = {
+                        navController.navigate("task")
+                    }
+                )
             }
         }
-
-        if (isClick) {
-            ModalBottomSheetExample(
-                onDismiss = { isClick = false },
-                onTaskSelected = {
-                    navController.navigate("task")   // Navigate to Task Screen
-
-                }
-            )
-        }
-
-
     }
 }
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TodayScreen() {
@@ -300,43 +318,81 @@ fun ModalBottomSheetExample(
 
 @Composable
 fun TaskBottom(
+    taskId: Int? = null,
     selected: Boolean = false,
     onSelect: () -> Unit = {},
     onCancel: () -> Unit = {},
     onConfirm: () -> Unit = {},
     navController: NavHostController,
     reminderViewModel: ReminderViewModel = viewModel(),
-
-    viewModel: CategoryViewModel = viewModel() // inject
+    taskViewModel: TaskViewModel = viewModel(),
+    viewModel: CategoryViewModel = viewModel()
 ) {
 
+    // ---------------------------
+    // UI States
+    // ---------------------------
     var taskName by remember { mutableStateOf("") }
     var showCategoryDialog by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf<Category?>(null) }
-    var showDatePicker by remember { mutableStateOf(false) }
     var getSelectedDate by remember { mutableStateOf("Today") }
+    var showDatePicker by remember { mutableStateOf(false) }
     var showRemainderDialog by remember { mutableStateOf(false) }
-    val reminders by reminderViewModel.reminders.collectAsState()
-    val remainderCount by remember { derivedStateOf { reminders.size.toString() } }
+    var showPriority by remember { mutableStateOf(false) }
+    var priorityCount by remember { mutableStateOf("Default") }
+    var isPendingState by remember { mutableStateOf(selected) }
+
+        // Reminder list
+        val reminders by reminderViewModel.reminders.collectAsState()
+        val remainderCount by remember { derivedStateOf { reminders.size.toString() } }
+
+        val context = LocalContext.current
+        val db = TaskDatabase.getDatabase(context)
+        val taskDao = db.taskDao()
+
+        val taskViewModel: TaskViewModel = viewModel(
+            factory = TaskViewModelFactory(taskDao)
+        )
+
+    val taskFromRoom = taskViewModel.getTaskById(taskId ?: -1).collectAsState(null).value
+
+    LaunchedEffect(taskFromRoom) {
+        taskFromRoom?.let { task ->
+
+            taskName = task.taskName
+
+            // Correct: convert stored millis → "12 Jan 2024"
+            getSelectedDate = formatMillisToDateString(task.date)
+
+            // Category
+            selectedCategory = viewModel.getCategoryByName(task.category)
+
+            // Set Reminder
+            reminderViewModel.setReminderFromEntity(task)
+
+            // Priority
+            priorityCount = task.priority.toString()
+
+            // Pending Task
+            isPendingState = task.isPending
+        }
+    }
+
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
+        modifier = Modifier.fillMaxSize().background(Color.White)
     ) {
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 40.dp, bottom = 20.dp, start = 20.dp, end = 20.dp)
-                .background(Color.White)
         ) {
 
-            // Header card
+            // Header (Add or Edit)
             Card(colors = CardDefaults.cardColors(containerColor = MeronUltraLight)) {
                 Text(
-                    text = "New task",
-                    fontFamily = FontFamily.SansSerif,
+                    text = if (taskId == null) "New Task" else "Edit Task",
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(12.dp)
@@ -366,42 +422,29 @@ fun TaskBottom(
 
             // Category Row
             Row(
-                modifier = Modifier.fillMaxWidth()
-                    .clickable{
-//                        navController.navigate("category")
-                        showCategoryDialog = true
-
-                    },
+                modifier = Modifier.fillMaxWidth().clickable { showCategoryDialog = true },
                 verticalAlignment = Alignment.CenterVertically
-
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.category),
-                    contentDescription = "Category",
+                    contentDescription = "",
                     modifier = Modifier.size(24.dp),
                     colorFilter = ColorFilter.tint(MeronSoft)
                 )
 
-                Text(
-                    text = "Category",
-                    fontFamily = FontFamily.SansSerif,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
+                Text("Category", modifier = Modifier.padding(start = 10.dp))
 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(Modifier.weight(1f))
 
                 Text(
-                    text =selectedCategory?.name ?: "Task",
-                    fontFamily = FontFamily.SansSerif,
-                    color = selectedCategory?.color ?: MeronSoft,
+                    text = selectedCategory?.name ?: "Task",
+                    color = selectedCategory?.color ?: MeronSoft
                 )
 
                 Image(
-                    painter = painterResource( id = selectedCategory?.icon ?: R.drawable.timer   ),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(start = 6.dp)
-                        .size(24.dp),
+                    painter = painterResource(id = selectedCategory?.icon ?: R.drawable.timer),
+                    contentDescription = "",
+                    modifier = Modifier.padding(start = 6.dp).size(24.dp),
                     colorFilter = ColorFilter.tint(selectedCategory?.color ?: MeronSoft)
                 )
             }
@@ -409,32 +452,23 @@ fun TaskBottom(
 
             // Date Row
             Row(
-                modifier = Modifier.fillMaxWidth()
-                    .clickable{
-                        showDatePicker= true
-                    },
+                modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
                 Image(
                     painter = painterResource(id = R.drawable.calendar),
-                    contentDescription = "Date",
+                    contentDescription = "",
                     modifier = Modifier.size(24.dp),
                     colorFilter = ColorFilter.tint(MeronSoft)
                 )
 
-                Text(
-                    text = "Date",
-                    fontFamily = FontFamily.SansSerif,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
-
+                Text("Date", modifier = Modifier.padding(start = 10.dp))
                 Spacer(modifier = Modifier.weight(1f))
 
                 Card(colors = CardDefaults.cardColors(containerColor = MeronUltraLight)) {
                     Text(
-                        text = getSelectedDate ?:"Today",
-                        fontFamily = FontFamily.SansSerif,
+                        text = getSelectedDate,
                         color = MeronSoft,
                         modifier = Modifier.padding(12.dp)
                     )
@@ -442,34 +476,25 @@ fun TaskBottom(
             }
             MildDivider()
 
-            // Notification Row
+            // Reminder Row
             Row(
-                modifier = Modifier.fillMaxWidth()
-                    .clickable{
-                        showRemainderDialog= true
-                    },
+                modifier = Modifier.fillMaxWidth().clickable { showRemainderDialog = true },
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
                 Image(
                     painter = painterResource(id = R.drawable.notification),
-                    contentDescription = "Notification",
+                    contentDescription = "",
                     modifier = Modifier.size(24.dp),
                     colorFilter = ColorFilter.tint(MeronSoft)
                 )
 
-                Text(
-                    text = "Time and remainder",
-                    fontFamily = FontFamily.SansSerif,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
-
+                Text("Time & Reminder", modifier = Modifier.padding(start = 10.dp))
                 Spacer(modifier = Modifier.weight(1f))
 
                 Card(colors = CardDefaults.cardColors(containerColor = MeronUltraLight)) {
                     Text(
-                        text = remainderCount?:"0",
-                        fontFamily = FontFamily.SansSerif,
+                        text = remainderCount,
                         color = MeronSoft,
                         modifier = Modifier.padding(12.dp)
                     )
@@ -477,7 +502,6 @@ fun TaskBottom(
             }
             MildDivider()
 
-            // Checklist Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -511,58 +535,24 @@ fun TaskBottom(
 
             // Priority Row
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().clickable { showPriority = true },
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
                 Image(
                     painter = painterResource(id = R.drawable.priority),
-                    contentDescription = "Priority",
+                    contentDescription = "",
                     modifier = Modifier.size(24.dp),
                     colorFilter = ColorFilter.tint(MeronSoft)
                 )
-
-                Text(
-                    text = "Priority",
-                    fontFamily = FontFamily.SansSerif,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
-
+                Text("Priority", modifier = Modifier.padding(start = 10.dp))
                 Spacer(modifier = Modifier.weight(1f))
-
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MeronUltraLight
-                    )
-                ) {
+                Card(colors = CardDefaults.cardColors(containerColor = MeronUltraLight)) {
                     Text(
-                        text = "Default",
-                        fontFamily = FontFamily.SansSerif,
+                        text = priorityCount,
                         color = MeronSoft,
                         modifier = Modifier.padding(12.dp)
                     )
                 }
-            }
-            MildDivider()
-
-            // Note Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Image(
-                    painter = painterResource(id = R.drawable.note),
-                    contentDescription = "Note",
-                    modifier = Modifier.size(24.dp),
-                    colorFilter = ColorFilter.tint(MeronSoft)
-                )
-
-                Text(
-                    text = "Note",
-                    fontFamily = FontFamily.SansSerif,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
             }
             MildDivider()
 
@@ -571,34 +561,28 @@ fun TaskBottom(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
                 Image(
                     painter = painterResource(id = R.drawable.pending_task),
-                    contentDescription = "Pending Task",
+                    contentDescription = "",
                     modifier = Modifier.size(26.dp),
                     colorFilter = ColorFilter.tint(MeronSoft)
                 )
 
                 Column {
+                    Text("Pending task", modifier = Modifier.padding(start = 10.dp))
                     Text(
-                        text = "Pending task",
-                        fontFamily = FontFamily.SansSerif,
-                        modifier = Modifier.padding(start = 10.dp)
-                    )
-                    Text(
-                        text = "It will be shown each day until completed.",
-                        fontFamily = FontFamily.SansSerif,
+                        "Shown every day until completed.",
                         fontSize = 10.sp,
                         color = Color.Gray,
                         modifier = Modifier.padding(start = 10.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(Modifier.weight(1f))
 
                 RadioButton(
-                    selected = selected,
-                    onClick = { onSelect() },
+                    selected = isPendingState,
+                    onClick = { isPendingState = !isPendingState },
                     colors = RadioButtonDefaults.colors(selectedColor = MeronSoft)
                 )
             }
@@ -606,44 +590,67 @@ fun TaskBottom(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // ⬇️ Bottom Buttons (move up above keyboard automatically)
+            // Bottom Buttons
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding()
-                    .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceAround
+                modifier = Modifier.fillMaxWidth().imePadding().padding(vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
+
                 Text(
                     text = "Cancel",
-                    fontFamily = FontFamily.SansSerif,
+                    modifier = Modifier.clickable { onCancel() },
                     fontWeight = FontWeight.Bold,
-                    color = Color.Gray,
-                    fontSize = 16.sp,
-                    modifier = Modifier.clickable { onCancel() }
+                    color = Color.Gray
                 )
 
                 Text(
                     text = "Confirm",
-                    fontFamily = FontFamily.SansSerif,
                     fontWeight = FontWeight.Bold,
                     color = MeronWarm,
-                    fontSize = 16.sp,
-                    modifier = Modifier.clickable { onConfirm() }
+                    modifier = Modifier.clickable {
+
+                        val dateMillis = convertDateToMillis(getSelectedDate)
+                        val reminder = reminderViewModel.reminders.value.firstOrNull()
+
+                        val task = TaskEntity(
+                            id = taskId ?: 0,
+                            taskName = taskName,
+                            category = selectedCategory?.name ?: "Task",
+                            date = dateMillis,
+                            time = reminder?.time ?: "",
+                            reminderType = reminder?.reminderType ?: "none",
+                            scheduleType = reminder?.scheduleType ?: "always",
+                            selectedDays = reminder?.selectedDays?.joinToString(","),
+                            daysBefore = reminder?.daysBefore,
+                            priority = priorityCount.toIntOrNull() ?: 0,
+                            note = "",
+                            checklist = "",
+                            isPending = isPendingState
+                        )
+
+                        if (taskId == null)
+                            taskViewModel.addTask(task)
+                        else
+                            taskViewModel.updateTask(task)   // <-- UPDATE MODE
+
+                        onConfirm()
+                    }
                 )
             }
-
         }
     }
+
+    // ---------------------------
+    // Dialogs
+    // ---------------------------
     if (showCategoryDialog) {
         CategoryDialog(
             showDialog = true,
             customCategories = viewModel.customCategories,
             defaultCategories = viewModel.defaultCategories,
             onDismiss = { showCategoryDialog = false },
-            onCategorySelected = { category ->
-                selectedCategory = category
-                println("Selected: ${category.name}")
+            onCategorySelected = {
+                selectedCategory = it
                 showCategoryDialog = false
             },
             onManageCategories = {
@@ -656,21 +663,29 @@ fun TaskBottom(
     if (showDatePicker) {
         CustomDatePicker(
             onDismiss = { showDatePicker = false },
-            onDateSelected = { selectedDate ->
-                getSelectedDate = formatDate1(selectedDate) //
+            onDateSelected = { date ->
+                getSelectedDate = formatDate1(date)
             }
         )
     }
 
     if (showRemainderDialog) {
         ReminderAlertDialog(
-            showDialog = showRemainderDialog,
-            viewModel = reminderViewModel,  // <-- directly use ViewModel
+            showDialog = true,
+            viewModel = reminderViewModel,
             onDismiss = { showRemainderDialog = false }
         )
     }
 
-
+    if (showPriority) {
+        PriorityAlertDialog(
+            onDismissRequest = { showPriority = false },
+            onConfirm = {
+                priorityCount = it.toString()
+                showPriority = false
+            }
+        )
+    }
 }
 
 @Composable
@@ -1751,4 +1766,158 @@ private fun shouldEmitHapticTick(lastTick: Int?, newTick: Int?): Boolean {
 }
 
 enum class TimeMode { HOUR, MINUTE }
+
+@Composable
+fun PriorityAlertDialog(
+    onDismissRequest: () -> Unit,
+    onConfirm: (Int) -> Unit
+) {
+    var priority by remember { mutableStateOf(1) }
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        // The title is the "Set a priority" text
+        title = {
+            Text(
+                text = "Set a priority",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.titleLarge
+            )
+        },
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                PriorityCounter(
+                    currentPriority = priority,
+                    onPriorityChange = { newPrio -> priority = newPrio }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                PriorityDefaultButton(onDismiss = onDismissRequest)
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Higher priority activities will be displayed higher in the list",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(priority) }) {
+                Text("OK", color = Color(0xFFE91E63)) // Pink color
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("CLOSE", color = Color.Black)
+            }
+        },
+        shape = RoundedCornerShape(12.dp),
+        containerColor = Color.White
+    )
+}
+
+@Composable
+fun PriorityCounter(currentPriority: Int, onPriorityChange: (Int) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFFF7F2F8), RoundedCornerShape(8.dp))
+            .height(56.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        PriorityCounterButton(symbol = "−") {
+            if (currentPriority > 1) onPriorityChange(currentPriority - 1)
+        }
+
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = currentPriority.toString(),
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFE91E63) // Pink color
+                )
+            )
+        }
+
+        PriorityCounterButton(symbol = "+") {
+            onPriorityChange(currentPriority + 1)
+        }
+    }
+}
+
+@Composable
+fun PriorityCounterButton(symbol: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .clickable(onClick = onClick)
+            .border(
+                width = 1.dp,
+                color = Color.LightGray.copy(alpha = 0.5f)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = symbol,
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+        )
+    }
+}
+@Composable
+fun PriorityDefaultButton(onDismiss: () -> Unit) {
+    Button(
+        onClick = { onDismiss() },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFFF8BBD0),
+            contentColor = Color(0xFFE91E63)
+        ),
+        shape = RoundedCornerShape(8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+    ) {
+        Text(
+            text = "Default - 1",
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold)
+        )
+        Text(text = " 🚩", color = Color(0xFFE91E63))
+    }
+}
+
+
+fun convertDateToMillis(dateString: String): Long {
+    return when (dateString) {
+
+        "Today" -> {
+            Calendar.getInstance().timeInMillis
+        }
+
+        "Tomorrow" -> {
+            Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, 1)
+            }.timeInMillis
+        }
+
+        else -> {
+            try {
+                val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+                formatter.parse(dateString)?.time ?: System.currentTimeMillis()
+            } catch (e: Exception) {
+                System.currentTimeMillis()
+            }
+        }
+    }
+}
+
+fun formatMillisToDateString(millis: Long): String {
+    val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+    return formatter.format(Date(millis))
+}
 

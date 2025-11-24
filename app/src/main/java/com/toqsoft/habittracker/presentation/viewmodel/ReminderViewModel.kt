@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.toqsoft.habittracker.data.dataStore.ReminderDataStore
+import com.toqsoft.habittracker.data.model.TaskEntity
 import com.toqsoft.habittracker.domain.model.ReminderData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,4 +43,18 @@ class ReminderViewModel(application: Application) : AndroidViewModel(application
             ReminderDataStore.saveReminders(getApplication(), list)
         }
     }
+
+    fun setReminderFromEntity(task: TaskEntity) {
+        val reminder = ReminderData(
+            id ="1",
+            time = task.time,
+            reminderType = task.reminderType,
+            scheduleType = task.scheduleType,
+            selectedDays = task.selectedDays?.split(",") ?: emptyList(),
+            daysBefore = task.daysBefore
+        )
+
+        addOrUpdate(reminder)
+    }
+
 }

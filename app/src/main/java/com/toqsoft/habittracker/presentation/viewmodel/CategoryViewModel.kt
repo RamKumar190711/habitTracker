@@ -28,4 +28,9 @@ class CategoryViewModel : ViewModel() {
     fun addCustomCategory(category: Category) {
         _customCategories.add(category)
     }
+    fun getCategoryByName(name: String): Category? {
+        return defaultCategories.find { it.name == name }
+            ?: customCategories.find { it.name == name }
+    }
+
 }

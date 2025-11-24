@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id ("kotlin-kapt")
 }
 
 android {
@@ -64,5 +65,15 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:${datetimeVersion}")
     implementation("androidx.datastore:datastore-preferences:1.1.0")
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // Room runtime
+    implementation ("androidx.room:room-runtime:2.6.0")
+
+    // Room Kotlin extensions (Coroutines support)
+    implementation ("androidx.room:room-ktx:2.6.0")
+
+    // Room compiler (for annotation processing / KAPT)
+    kapt ("androidx.room:room-compiler:2.6.0")
+
 }
 
