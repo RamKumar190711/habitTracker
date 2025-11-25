@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -39,12 +40,15 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
@@ -57,6 +61,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -66,6 +71,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,6 +81,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -96,6 +103,7 @@ import com.toqsoft.habittracker.R
 import com.toqsoft.habittracker.data.database.TaskDatabase
 import com.toqsoft.habittracker.data.model.TaskEntity
 import com.toqsoft.habittracker.domain.model.Category
+import com.toqsoft.habittracker.domain.model.DrawerItem
 import com.toqsoft.habittracker.domain.model.ReminderData
 import com.toqsoft.habittracker.presentation.viewmodel.CategoryViewModel
 import com.toqsoft.habittracker.presentation.viewmodel.ReminderViewModel
@@ -105,6 +113,7 @@ import com.toqsoft.habittracker.ui.theme.MeronLight
 import com.toqsoft.habittracker.ui.theme.MeronSoft
 import com.toqsoft.habittracker.ui.theme.MeronUltraLight
 import com.toqsoft.habittracker.ui.theme.MeronWarm
+import kotlinx.coroutines.launch
 
 import kotlinx.datetime.toKotlinLocalDate
 import java.text.SimpleDateFormat
@@ -118,70 +127,270 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavHostController) {
     var selectedRoute by remember { mutableStateOf(BottomNavItem.Today.route) }
     var isClick by remember { mutableStateOf(false) }
-
     val today = LocalDate.now().toKotlinLocalDate()
     val selectedDay = remember { mutableStateOf(today.dayOfMonth) }
 
+    // Drawer state and coroutine scope
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
     val showScaffoldBars = selectedRoute != BottomNavItem.Timer.route
+    var isSearchMode by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            if (showScaffoldBars) {
-                HabitTrackerTopBar(
-                    currentDate = formatDate(
-                        kotlinx.datetime.LocalDate(today.year, today.monthNumber, selectedDay.value)
+    val drawerItems = listOf(
+        DrawerItem("News and events", R.drawable.newspaper),
+        DrawerItem("Categories", R.drawable.category),
+        DrawerItem("Timer", R.drawable.timer),
+        DrawerItem("Customize", R.drawable.customize),
+        DrawerItem("Settings", R.drawable.settings),
+        DrawerItem("Account and Backups", R.drawable.account),
+        DrawerItem("Get premium", R.drawable.premimum),
+        DrawerItem("Rate this app", R.drawable.rate),
+        DrawerItem("Contact us", R.drawable.contact)
+    )
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(
+                modifier = Modifier.fillMaxHeight(),
+                drawerContainerColor  = Color.White
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "HabitNow",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp,
+                        color = Color(0xFFE91E63)
                     )
-                )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Tuesday\n25 November 2025", // Make dynamic if needed
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    drawerItems.forEachIndexed { index, item ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { /* Handle drawer item click */ }
+                                .padding(vertical = 8.dp)
+                        ) {
+                            item.iconRes?.let { icon ->
+                                Icon(
+                                    painter = painterResource(id = icon),
+                                    contentDescription = item.title,
+                                    modifier = Modifier.size(24.dp),
+                                    tint = Color.Gray
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                            }
+                            Text(text = item.title, fontSize = 16.sp)
+                        }
+
+                        // Add mild divider after specific items
+                        if (index == 1 || index == 3 || index == 6) {
+                            Divider(
+                                color = Color.LightGray,
+                                thickness = 0.5.dp,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                        }
+                    }
+                }
             }
         },
-        floatingActionButton = {
-            if (showScaffoldBars) {
-                GradientFAB(
-                    onClick = { isClick = !isClick },
-                    iconRes = R.drawable.add
-                )
+        scrimColor = Color.Black.copy(alpha = 0.32f) // Optional semi-transparent scrim
+    ) {
+        Scaffold(
+            topBar = {
+                if (showScaffoldBars) {
+                    if (isSearchMode) {
+                        // Show the Search Bar Composable when in search mode
+                        ActivitySearchTopBar(
+                            onCloseClick = { isSearchMode = false }
+                        )
+                    } else {
+                        // Show the default Top Bar
+                        HabitTrackerTopBar(
+                            currentDate = formatDate(
+                                kotlinx.datetime.LocalDate(today.year, today.monthNumber, selectedDay.value)
+                            ),
+                            onMenuClick = {
+                                scope.launch { drawerState.open() }
+                            },
+                            // Add a new action handler for the search icon
+                            onAction1 = { isSearchMode = true }
+                        )
+                    }
+                }
+            },
+            floatingActionButton = {
+                if (showScaffoldBars) {
+                    GradientFAB(
+                        onClick = { isClick = !isClick },
+                        iconRes = R.drawable.add
+                    )
+                }
+            },
+            bottomBar = {
+                if (showScaffoldBars) {
+                    BottomNavigationBar(
+                        items = listOf(
+                            BottomNavItem.Today,
+                            BottomNavItem.Habits,
+                            BottomNavItem.Tasks,
+                            BottomNavItem.Category,
+                            BottomNavItem.Timer
+                        ),
+                        selectedRoute = selectedRoute,
+                        onItemSelected = { selectedRoute = it.route }
+                    )
+                }
+            },
+            containerColor = Color.White
+        ) { innerPadding ->
+            Box(modifier = Modifier.padding(innerPadding)) {
+                when (selectedRoute) {
+                    BottomNavItem.Today.route -> TodayScreen()
+                    BottomNavItem.Timer.route -> TimerScreen()
+                    // Add other screens as needed
+                }
+
+                if (isClick && showScaffoldBars) {
+                    ModalBottomSheetExample(
+                        onDismiss = { isClick = false },
+                        onTaskSelected = { navController.navigate("task") }
+                    )
+                }
             }
-        },
-        bottomBar = {
-            if (showScaffoldBars) {
-                BottomNavigationBar(
-                    items = listOf(
-                        BottomNavItem.Today,
-                        BottomNavItem.Habits,
-                        BottomNavItem.Tasks,
-                        BottomNavItem.Category,
-                        BottomNavItem.Timer
-                    ),
-                    selectedRoute = selectedRoute,
-                    onItemSelected = { selectedRoute = it.route }
+        }
+    }
+}
+
+
+
+
+val PlaceholderBackground = Color(0xFFF7F0F3)
+val PlaceholderPink = Color(0xFFE91E63)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ActivitySearchTopBar(
+    onCloseClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White) // White background
+            .statusBarsPadding() // Push below status bar
+    ) {
+        // --- 1. Category Selection Row ---
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp), // Remove PlaceholderBackground
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // "All" dropdown simulation
+            Row(
+                modifier = Modifier
+                    .weight(0.3f)
+                    .clickable { /* Handle "All" dropdown click */ }
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "All",
+                    fontSize = 16.sp,
+                    color = Color.Black
                 )
-            }
-        },
-        containerColor = Color.White
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            when (selectedRoute) {
-                BottomNavItem.Today.route -> TodayScreen()
-                // BottomNavItem.Habits.route -> HabitsScreen()
-                // BottomNavItem.Tasks.route -> TasksScreen()
-                // BottomNavItem.Category.route -> CategoryScreen()
-                BottomNavItem.Timer.route -> TimerScreen()
+                Icon(
+                    painter = painterResource(id = R.drawable.down),
+                    contentDescription = "Category Dropdown",
+                    modifier = Modifier.size(18.dp),
+                    tint = Color.Gray
+                )
             }
 
-            if (isClick && showScaffoldBars) {
-                ModalBottomSheetExample(
-                    onDismiss = { isClick = false },
-                    onTaskSelected = {
-                        navController.navigate("task")
-                    }
+            Text(
+                text = "Select a category",
+                modifier = Modifier
+                    .weight(0.7f)
+                    .padding(start = 14.dp),
+                fontSize = 16.sp,
+                color = Color.Gray
+            )
+        }
+
+        MildDivider() // Optional divider
+
+        // --- 2. Search Input and Actions Row ---
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp), // Remove PlaceholderBackground
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.search),
+                    contentDescription = "Search",
+                    modifier = Modifier.size(20.dp),
+                    tint = Color.Gray
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Text(
+                    text = "Activity name",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
+
+            IconButton(onClick = { /* Handle Pin Click */ }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.pin),
+                    contentDescription = "Pin",
+                    modifier = Modifier.size(20.dp),
+                    tint = PlaceholderPink
+                )
+            }
+
+            IconButton(onClick = { /* Handle Delete Click */ }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.delete),
+                    contentDescription = "Delete",
+                    modifier = Modifier.size(20.dp),
+                    tint = PlaceholderPink
+                )
+            }
+
+            IconButton(onClick = onCloseClick) {
+                Icon(
+                    painter = painterResource(id = R.drawable.up),
+                    contentDescription = "Close Search",
+                    modifier = Modifier.size(20.dp),
+                    tint = PlaceholderPink
                 )
             }
         }
+
+        Divider(color = Color.LightGray, thickness = 0.5.dp)
     }
 }
 

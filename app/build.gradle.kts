@@ -44,6 +44,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.material3)
     val datetimeVersion = "0.5.0"
 
     implementation(libs.androidx.core.ktx)

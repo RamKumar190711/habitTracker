@@ -1,22 +1,14 @@
 package com.toqsoft.habittracker.presentation.view
 
 import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.FlingBehavior
-import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,19 +19,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.toqsoft.habittracker.R
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 
+// ----------------------------------------------------------
+//  MAIN TIMER SCREEN
+// ----------------------------------------------------------
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerScreen() {
@@ -47,8 +39,9 @@ fun TimerScreen() {
     var timerState by remember { mutableStateOf<TimerState>(TimerState.Idle) }
     var selectedTab by remember { mutableStateOf("Stopwatch") }
     var lastTime by remember { mutableStateOf<String?>(null) }
+    val showCount = selectedTab == "Countdown"
 
-
+    // Stopwatch ticking
     LaunchedEffect(timerState) {
         if (timerState is TimerState.Running) {
             while (timerState is TimerState.Running) {
@@ -59,56 +52,66 @@ fun TimerScreen() {
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Timer") }) }
+        topBar = { TopAppBar(title = { Text("Timer") },
+            colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color.White)
+        ) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .padding(paddingValues)
+                .background(color = Color.White),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Show timer display depending on selected tab
-            when (selectedTab) {
-                "Stopwatch" -> TimerDisplay(currentTime = currentTime, timerState = timerState)
-                "Countdown" -> CountdownTimerSetupScreen(onStart = { currentTime = it })
-                "Intervals" -> {
-                    // You can add Interval UI here later
+            Box(
+                modifier = Modifier
+                    .width(350.dp)
+                    .height(300.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                when (selectedTab) {
+                    "Stopwatch" -> TimerDisplay(currentTime = currentTime, timerState = timerState)
+                    "Countdown" -> CountdownMainScreen(
+                        showCount = showCount
+                    )
+                    "Intervals" -> Text("Intervals Setup", color = Color.Gray)
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Action Buttons (same for all tabs)
-            ActionButtons(
-                timerState = timerState,
-                onStart = { timerState = TimerState.Running },
-                onPause = { timerState = TimerState.Paused },
-                onResume = { timerState = TimerState.Running },
-                onStop = {
-                    val minutes = (currentTime / 1000) / 60
-                    val seconds = (currentTime / 1000) % 60
-                    lastTime = String.format("%02d:%02d", minutes, seconds)
-                    timerState = TimerState.Idle
-                    currentTime = 0L
-                }
-            )
+            if(!showCount) {
+                ActionButtons(
+                    timerState = timerState,
+                    onStart = { timerState = TimerState.Running },
+                    onPause = { timerState = TimerState.Paused },
+                    onResume = { timerState = TimerState.Running },
+                    onStop = {
+                        val minutes = (currentTime / 1000) / 60
+                        val seconds = (currentTime / 1000) % 60
+                        lastTime = String.format("%02d:%02d", minutes, seconds)
+                        timerState = TimerState.Idle
+                        currentTime = 0L
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(64.dp))
 
-            // Tabs
             TimerTabs(selectedTab = selectedTab, onTabSelected = { selectedTab = it })
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Last record card
             LastRecordCard(lastTime = lastTime)
         }
-
     }
 }
 
+// ----------------------------------------------------------
+//  ACTION BUTTONS
+// ----------------------------------------------------------
 @Composable
 fun ActionButtons(
     timerState: TimerState,
@@ -134,7 +137,9 @@ fun ActionButtons(
         is TimerState.Running, is TimerState.Paused -> {
             Row(
                 horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             ) {
                 Button(
                     onClick = if (timerState is TimerState.Running) onPause else onResume,
@@ -167,6 +172,9 @@ fun ActionButtons(
     }
 }
 
+// ----------------------------------------------------------
+//  STOPWATCH DISPLAY
+// ----------------------------------------------------------
 @Composable
 fun TimerDisplay(currentTime: Long, timerState: TimerState) {
     val seconds = (currentTime / 1000) % 60
@@ -174,7 +182,6 @@ fun TimerDisplay(currentTime: Long, timerState: TimerState) {
     val timeString = String.format("%02d:%02d", minutes, seconds)
 
     val circleColor by if (timerState is TimerState.Running) {
-        // Animate only if running
         rememberInfiniteTransition().animateColor(
             initialValue = Color(0xFFD81B60),
             targetValue = Color(0xFFF06292),
@@ -184,7 +191,6 @@ fun TimerDisplay(currentTime: Long, timerState: TimerState) {
             )
         )
     } else {
-        // Static color if paused/idle
         mutableStateOf(if (timerState is TimerState.Paused) Color(0xFFF8BBD0) else Color(0xFFD81B60))
     }
 
@@ -208,7 +214,9 @@ fun TimerDisplay(currentTime: Long, timerState: TimerState) {
     }
 }
 
-
+// ----------------------------------------------------------
+//  TABS
+// ----------------------------------------------------------
 @Composable
 fun TimerTabs(selectedTab: String, onTabSelected: (String) -> Unit) {
     Row(
@@ -216,7 +224,7 @@ fun TimerTabs(selectedTab: String, onTabSelected: (String) -> Unit) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFFFEBEE)) // light pink background for the tab bar
+            .background(Color(0xFFFFEBEE))
     ) {
         val tabs = listOf("Stopwatch", "Countdown", "Intervals")
         tabs.forEach { tab ->
@@ -264,6 +272,9 @@ fun TimerTabButton(text: String, isSelected: Boolean) {
     }
 }
 
+// ----------------------------------------------------------
+//  LAST RECORD CARD
+// ----------------------------------------------------------
 @Composable
 fun LastRecordCard(lastTime: String? = null) {
     Card(
@@ -309,26 +320,61 @@ fun LastRecordCard(lastTime: String? = null) {
     }
 }
 
-// --- Constants ---
+
 val HOURS_RANGE = 0..23
 val MINUTES_SECONDS_RANGE = 0..59
-val ITEM_HEIGHT = 55.dp
-val DIVIDER_COLOR = Color(0xFFE0E0E0) // Light gray horizontal divider
-val HORIZONTAL_DIVIDER_WIDTH = 30.dp
+val ITEM_HEIGHT = 60.dp
 
-// --- Countdown Timer Setup Composable ---
+@Composable
+fun CountdownMainScreen(showCount: Boolean= false) {
+    var showTimer by remember { mutableStateOf(false) }
+    var timerValueMs by remember { mutableStateOf(0L) }
+    var isRunning by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        if (showTimer) {
+            CircularCountdownTimer(
+                totalTime = timerValueMs,
+                isRunning = isRunning,
+                onFinished = {
+                    showTimer = false
+                    isRunning = false
+                },
+                onPause = { isRunning = !isRunning } // toggle running state
+            )
+        } else {
+            CountdownTimerSetupScreen { millis ->
+                timerValueMs = millis
+                showTimer = true
+                isRunning = true
+            }
+        }
+    }
+}
+
+
 @Composable
 fun CountdownTimerSetupScreen(onStart: (Long) -> Unit = {}) {
     val selectedHours = remember { mutableStateOf(0) }
     val selectedMinutes = remember { mutableStateOf(0) }
     val selectedSeconds = remember { mutableStateOf(0) }
 
+    // Compute total time directly from the values
+    val totalTimeMillis = remember(selectedHours.value, selectedMinutes.value, selectedSeconds.value) {
+        (selectedHours.value * 3600L +
+                selectedMinutes.value * 60L +
+                selectedSeconds.value) * 1000L
+    }
+
+    val isStartEnabled = totalTimeMillis > 0L
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
-
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -340,30 +386,14 @@ fun CountdownTimerSetupScreen(onStart: (Long) -> Unit = {}) {
                 label = "hours",
                 onValueChange = { selectedHours.value = it }
             )
-
-            Box(
-                modifier = Modifier
-                    .height(ITEM_HEIGHT * 3)
-                    .wrapContentHeight(Alignment.CenterVertically)
-            ) {
-                Text(":", fontSize = 48.sp, color = Color.Black)
-            }
-
+            Text(":", fontSize = 48.sp, color = Color.Black, modifier = Modifier.height(ITEM_HEIGHT * 3))
             TimePickerColumn(
                 value = selectedMinutes.value,
                 range = MINUTES_SECONDS_RANGE,
                 label = "minutes",
                 onValueChange = { selectedMinutes.value = it }
             )
-
-            Box(
-                modifier = Modifier
-                    .height(ITEM_HEIGHT * 3)
-                    .wrapContentHeight(Alignment.CenterVertically)
-            ) {
-                Text(":", fontSize = 48.sp, color = Color.Black)
-            }
-
+            Text(":", fontSize = 48.sp, color = Color.Black, modifier = Modifier.height(ITEM_HEIGHT * 3))
             TimePickerColumn(
                 value = selectedSeconds.value,
                 range = MINUTES_SECONDS_RANGE,
@@ -372,12 +402,18 @@ fun CountdownTimerSetupScreen(onStart: (Long) -> Unit = {}) {
             )
         }
 
-        val totalTimeMillis = remember(selectedHours.value, selectedMinutes.value, selectedSeconds.value) {
-            (selectedHours.value * 3600L + selectedMinutes.value * 60L + selectedSeconds.value) * 1000L
-        }
-
-        LaunchedEffect(totalTimeMillis) {
-            onStart(totalTimeMillis)
+        Button(
+            onClick = { onStart(totalTimeMillis) },
+            enabled = isStartEnabled, // will now enable automatically after setting time
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFD81B60),
+                contentColor = Color.White
+            ),
+            modifier = Modifier
+                .padding(top = 24.dp)
+                .width(200.dp)
+        ) {
+            Text("▶ START", fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -389,27 +425,39 @@ fun TimePickerColumn(
     label: String,
     onValueChange: (Int) -> Unit
 ) {
-    val density = LocalDensity.current
-    val loopMultiplier = 1000 // simulate infinite scroll
-    val rangeList = remember(range) { List(loopMultiplier) { range.toList() }.flatten() }
+    val loopMultiplier = 1000
+    val rangeList = remember { List(loopMultiplier) { range.toList() }.flatten() }
+    val initialIndex = rangeList.size / 2 + value
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
+    val snapBehavior = rememberSnapFlingBehavior(listState)
+    var centeredIndex by remember { mutableStateOf(initialIndex) }
 
-    // Start in the middle of the large list
-    val initialValue = if (value in range) value else range.first
-    val initialIndex = rangeList.indexOf(initialValue) + (rangeList.size / 2)
+    // ✅ Call onValueChange immediately for the visual center
+    LaunchedEffect(Unit) {
+        onValueChange(rangeList[centeredIndex] % range.count())
+    }
 
-    val listState = rememberLazyListState(
-        initialFirstVisibleItemIndex = initialIndex,
-        initialFirstVisibleItemScrollOffset = 0
-    )
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.layoutInfo.visibleItemsInfo }
+            .collect { visibleItems ->
+                val layoutInfo = listState.layoutInfo
+                if (visibleItems.isEmpty()) return@collect
 
-    // Snap behavior for LazyColumn
-    val snapBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+                val centerOffset = layoutInfo.viewportStartOffset +
+                        (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset) / 2
+
+                centeredIndex = visibleItems.minByOrNull { item ->
+                    val itemCenter = item.offset + item.size / 2
+                    abs(itemCenter - centerOffset)
+                }?.index ?: centeredIndex
+            }
+    }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .height(ITEM_HEIGHT * 3)
-            .width(80.dp)
+            .width(90.dp)
             .clipToBounds()
     ) {
         Box(
@@ -420,53 +468,37 @@ fun TimePickerColumn(
                 state = listState,
                 contentPadding = PaddingValues(vertical = ITEM_HEIGHT),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxHeight(),
                 flingBehavior = snapBehavior
             ) {
                 itemsIndexed(rangeList) { index, itemValue ->
-                    // Determine which item is visually centered
-                    val middleIndex = listState.layoutInfo.visibleItemsInfo.minByOrNull { itemInfo ->
-                        val centerOfItem = itemInfo.offset + itemInfo.size / 2
-                        val centerOfColumn = with(density) { ITEM_HEIGHT.roundToPx() * 1.5f }
-                        abs(centerOfItem - centerOfColumn)
-                    }?.index ?: initialIndex
-
-                    val isCenteredVisually = index == middleIndex
-
+                    val isCentered = index == centeredIndex
                     Text(
                         text = itemValue.toString().padStart(2, '0'),
-                        fontSize = if (isCenteredVisually) 48.sp else 32.sp,
-                        fontWeight = if (isCenteredVisually) FontWeight.Bold else FontWeight.Normal,
-                        color = if (itemValue == value) Color.Black else Color.Gray,
-                        textAlign = TextAlign.Center,
+                        fontSize = if (isCentered) 50.sp else 32.sp,
+                        fontWeight = if (isCentered) FontWeight.Bold else FontWeight.Normal,
+                        color = if (isCentered) Color.Black else Color.Gray,
                         modifier = Modifier
                             .height(ITEM_HEIGHT)
                             .fillMaxWidth()
-                            .wrapContentHeight(Alignment.CenterVertically)
-                            .clickable {
-                                // Adjust value with modulo for the range
-                                val newValue = range.first + (itemValue - range.first) % range.count()
-                                onValueChange(newValue)
-                            },
-                        softWrap = false
+                            .wrapContentHeight()
+                            .clickable { onValueChange(itemValue % range.count()) }
                     )
                 }
             }
 
-            // Dividers
             Divider(
-                color = DIVIDER_COLOR,
-                thickness = 1.dp,
+                color = Color.Gray,
+                thickness = 2.dp,
                 modifier = Modifier
-                    .width(HORIZONTAL_DIVIDER_WIDTH)
+                    .width(90.dp)
                     .align(Alignment.TopCenter)
                     .offset(y = ITEM_HEIGHT)
             )
             Divider(
-                color = DIVIDER_COLOR,
-                thickness = 1.dp,
+                color = Color.Gray,
+                thickness = 2.dp,
                 modifier = Modifier
-                    .width(HORIZONTAL_DIVIDER_WIDTH)
+                    .width(90.dp)
                     .align(Alignment.TopCenter)
                     .offset(y = ITEM_HEIGHT * 2)
             )
@@ -480,25 +512,83 @@ fun TimePickerColumn(
         )
     }
 
-    // Snap to nearest item and update value
     LaunchedEffect(listState.isScrollInProgress) {
         if (!listState.isScrollInProgress) {
-            delay(50)
-            val layoutInfo = listState.layoutInfo
-            if (layoutInfo.visibleItemsInfo.isEmpty()) return@LaunchedEffect
+            delay(60)
+            listState.animateScrollToItem(centeredIndex)
+            val newValue = rangeList[centeredIndex] % range.count()
+            if (newValue != value) onValueChange(newValue)
+        }
+    }
+}
 
-            val centerOffset = with(density) { ITEM_HEIGHT.roundToPx() * 1.5f }
+@Composable
+fun CircularCountdownTimer(
+    totalTime: Long,
+    isRunning: Boolean,
+    onFinished: () -> Unit = {},
+    onPause: () -> Unit
+) {
+    var timeLeft by remember { mutableStateOf(totalTime) }
 
-            val closestItem = layoutInfo.visibleItemsInfo.minByOrNull { itemInfo ->
-                val centerOfItem = itemInfo.offset + itemInfo.size / 2
-                abs(centerOfItem - centerOffset)
-            } ?: layoutInfo.visibleItemsInfo.first()
+    val secondsLeft = (timeLeft / 1000).toInt()
+    val progress = timeLeft / totalTime.toFloat().coerceAtLeast(1f)
 
-            listState.animateScrollToItem(closestItem.index, 0)
+    // Timer logic reacts to `isRunning`
+    LaunchedEffect(isRunning) {
+        while (timeLeft > 0 && isRunning) {
+            delay(1000)
+            timeLeft -= 1000
+        }
+        if (timeLeft <= 0) onFinished()
+    }
 
-            val newValue = range.first + (rangeList[closestItem.index] - range.first) % range.count()
-            if (newValue != value) {
-                onValueChange(newValue)
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.size(280.dp)
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawArc(
+                color = Color(0xFFE5D9DD),
+                startAngle = -90f,
+                sweepAngle = 360f,
+                useCenter = false,
+                style = Stroke(width = 22f, cap = StrokeCap.Round)
+            )
+
+            drawArc(
+                color = Color(0xFFE14A63),
+                startAngle = -90f,
+                sweepAngle = 360f * progress,
+                useCenter = false,
+                style = Stroke(width = 22f, cap = StrokeCap.Round)
+            )
+        }
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = String.format(
+                    "%02d:%02d:%02d",
+                    secondsLeft / 3600,
+                    (secondsLeft % 3600) / 60,
+                    secondsLeft % 60
+                ),
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF3B3235)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Pause / Resume button
+            Button(
+                onClick = { onPause() },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFD81B60),
+                    contentColor = Color.White
+                )
+            ) {
+                Text(if (isRunning) "⏸ PAUSE" else "▶ RESUME", fontWeight = FontWeight.Bold)
             }
         }
     }
