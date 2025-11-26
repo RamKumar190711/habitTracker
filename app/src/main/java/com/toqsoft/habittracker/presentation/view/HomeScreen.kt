@@ -1,9 +1,11 @@
 package com.toqsoft.habittracker.presentation.view
 
+import android.content.Context
 import android.graphics.Insets.add
 import android.graphics.Paint
 import android.graphics.Rect
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -30,6 +32,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -125,6 +128,9 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import androidx.compose.ui.graphics.toArgb
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.*
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -136,23 +142,25 @@ fun HomeScreen(navController: NavHostController) {
     val today = LocalDate.now().toKotlinLocalDate()
     val selectedDay = remember { mutableStateOf(today.dayOfMonth) }
 
-    // Drawer state and coroutine scope
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val showScaffoldBars = selectedRoute != BottomNavItem.Timer.route
     var isSearchMode by remember { mutableStateOf(false) }
+    val searchQuery = remember { mutableStateOf("") }
+
 
     val drawerItems = listOf(
-        DrawerItem("News and events", R.drawable.newspaper),
-        DrawerItem("Categories", R.drawable.category),
-        DrawerItem("Timer", R.drawable.timer),
-        DrawerItem("Customize", R.drawable.customize),
-        DrawerItem("Settings", R.drawable.settings),
-        DrawerItem("Account and Backups", R.drawable.account),
-        DrawerItem("Get premium", R.drawable.premimum),
-        DrawerItem("Rate this app", R.drawable.rate),
-        DrawerItem("Contact us", R.drawable.contact)
+        DrawerItem("News and events", R.drawable.newspaper, "news"),
+        DrawerItem("Categories", R.drawable.category, "category"),
+        DrawerItem("Timer", R.drawable.timer, "timer"),
+        DrawerItem("Customize", R.drawable.customize, "customize"),
+        DrawerItem("Settings", R.drawable.settings, "settings"),
+        DrawerItem("Account and Backups", R.drawable.account, "account_backup"),
+        DrawerItem("Get premium", R.drawable.premimum, "premium"),
+        DrawerItem("Rate this app", R.drawable.rate, "rate"),
+        DrawerItem("Contact us", R.drawable.contact, "contact")
     )
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -170,7 +178,7 @@ fun HomeScreen(navController: NavHostController) {
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Tuesday\n25 November 2025", // Make dynamic if needed
+                        text = "Tuesday\n25 November 2025",
                         fontSize = 14.sp,
                         color = Color.Gray
                     )
@@ -181,7 +189,14 @@ fun HomeScreen(navController: NavHostController) {
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { /* Handle drawer item click */ }
+                                .clickable {
+                                    item.route?.let { route ->
+                                        navController.navigate(route) {
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                    scope.launch { drawerState.close() }
+                                }
                                 .padding(vertical = 8.dp)
                         ) {
                             item.iconRes?.let { icon ->
@@ -196,7 +211,6 @@ fun HomeScreen(navController: NavHostController) {
                             Text(text = item.title, fontSize = 16.sp)
                         }
 
-                        // Add mild divider after specific items
                         if (index == 1 || index == 3 || index == 6) {
                             Divider(
                                 color = Color.LightGray,
@@ -208,18 +222,21 @@ fun HomeScreen(navController: NavHostController) {
                 }
             }
         },
-        scrimColor = Color.Black.copy(alpha = 0.32f) // Optional semi-transparent scrim
+        scrimColor = Color.Black.copy(alpha = 0.32f)
     ) {
         Scaffold(
             topBar = {
                 if (showScaffoldBars) {
                     if (isSearchMode) {
-                        // Show the Search Bar Composable when in search mode
                         ActivitySearchTopBar(
-                            onCloseClick = { isSearchMode = false }
+                            searchText = searchQuery.value,
+                            onSearchChange = { searchQuery.value = it },
+                            onCloseClick = {
+                                isSearchMode = false
+                                searchQuery.value = ""
+                            }
                         )
                     } else {
-                        // Show the default Top Bar
                         HabitTrackerTopBar(
                             currentDate = formatDate(
                                 kotlinx.datetime.LocalDate(today.year, today.monthNumber, selectedDay.value)
@@ -227,7 +244,6 @@ fun HomeScreen(navController: NavHostController) {
                             onMenuClick = {
                                 scope.launch { drawerState.open() }
                             },
-                            // Add a new action handler for the search icon
                             onAction1 = { isSearchMode = true }
                         )
                     }
@@ -260,9 +276,8 @@ fun HomeScreen(navController: NavHostController) {
         ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
                 when (selectedRoute) {
-                    BottomNavItem.Today.route -> TodayScreen()
+                    BottomNavItem.Today.route -> TodayScreen(searchQuery = searchQuery.value)
                     BottomNavItem.Timer.route -> TimerScreen()
-                    // Add other screens as needed
                 }
 
                 if (isClick && showScaffoldBars) {
@@ -285,26 +300,26 @@ val PlaceholderPink = Color(0xFFE91E63)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivitySearchTopBar(
+    searchText: String,
+    onSearchChange: (String) -> Unit,
     onCloseClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White) // White background
-            .statusBarsPadding() // Push below status bar
+            .background(Color.White)
+            .statusBarsPadding()
     ) {
-        // --- 1. Category Selection Row ---
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp), // Remove PlaceholderBackground
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // "All" dropdown simulation
             Row(
                 modifier = Modifier
                     .weight(0.3f)
-                    .clickable { /* Handle "All" dropdown click */ }
+                    .clickable { }
                     .padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -331,13 +346,12 @@ fun ActivitySearchTopBar(
             )
         }
 
-        MildDivider() // Optional divider
+        MildDivider()
 
-        // --- 2. Search Input and Actions Row ---
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp), // Remove PlaceholderBackground
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
@@ -355,14 +369,28 @@ fun ActivitySearchTopBar(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                Text(
-                    text = "Activity name",
-                    fontSize = 14.sp,
-                    color = Color.Gray
+                BasicTextField(
+                    value = searchText,
+                    onValueChange = onSearchChange,
+                    singleLine = true,
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    ),
+                    decorationBox = { innerTextField ->
+                        if (searchText.isEmpty()) {
+                            Text(
+                                text = "Activity name",
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        }
+                        innerTextField()
+                    }
                 )
             }
 
-            IconButton(onClick = { /* Handle Pin Click */ }) {
+            IconButton(onClick = { }) {
                 Icon(
                     painter = painterResource(id = R.drawable.pin),
                     contentDescription = "Pin",
@@ -371,7 +399,7 @@ fun ActivitySearchTopBar(
                 )
             }
 
-            IconButton(onClick = { /* Handle Delete Click */ }) {
+            IconButton(onClick = { }) {
                 Icon(
                     painter = painterResource(id = R.drawable.delete),
                     contentDescription = "Delete",
@@ -394,54 +422,247 @@ fun ActivitySearchTopBar(
     }
 }
 
+
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TodayScreen() {
-    val today = LocalDate.now().toKotlinLocalDate()
-    val selectedDay = remember { mutableStateOf(today.dayOfMonth) }
+fun TodayScreen(
+    searchQuery: String,
+    context: Context = LocalContext.current
+) {
+    val db = TaskDatabase.getDatabase(context)
+    val taskDao = db.taskDao()
+    val taskViewModel: TaskViewModel = viewModel(factory = TaskViewModelFactory(taskDao))
+
+    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val selectedDate = remember { mutableStateOf(today) }
+
+    val tasks by taskViewModel.allTasks.collectAsState(initial = emptyList())
+
+    val filteredTasks by remember(searchQuery, tasks, selectedDate.value) {
+        derivedStateOf {
+            tasks.filter { task ->
+                val taskDate = Instant.fromEpochMilliseconds(task.date)
+                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                    .date
+
+                val matchesDate = taskDate == selectedDate.value
+
+                val trimmedTaskName = task.taskName.trim()
+                val trimmedSearchQuery = searchQuery.trim()
+
+                val matchesSearch = trimmedTaskName.contains(trimmedSearchQuery, ignoreCase = true)
+
+                // --- ANDROID LOGGING ADDED HERE ---
+                if (trimmedSearchQuery.isNotEmpty()) {
+                    Log.d("SearchDebug", "--------------------")
+                    Log.d("SearchDebug", "Date Match: $matchesDate")
+                    Log.d("SearchDebug", "Query (trimmed): '$trimmedSearchQuery'")
+                    Log.d("SearchDebug", "Task Name (trimmed): '$trimmedTaskName'")
+                    Log.d("SearchDebug", "Search Match Result: $matchesSearch")
+                    Log.d("SearchDebug", "--------------------")
+                }
+                // ---------------------------------
+
+                matchesDate && matchesSearch
+            }
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Calendar at the top with fixed height
         Calendar(
             today = today,
-            onDateSelected = { newDate ->
-                selectedDay.value = newDate.dayOfMonth
-            },
+            onDateSelected = { date -> selectedDate.value = date },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(100.dp) // fixed height
-                .align(Alignment.TopCenter) // top of the screen
+                .height(100.dp)
+                .align(Alignment.TopCenter)
         )
 
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.align(Alignment.Center)
+            modifier = Modifier
+                .padding(top = 90.dp)
+                .fillMaxSize()
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.cal_back),
-                contentDescription = "Today",
-                modifier = Modifier.size(70.dp)
-            )
+            if (filteredTasks.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.cal_back),
+                        contentDescription = "Today",
+                        modifier = Modifier.size(70.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "There is nothing scheduled",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        "Try adding a new activity",
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 10.dp),
+                        fontSize = 14.sp
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
+                    items(filteredTasks) { task ->
+                        TaskCard(task)
+                    }
+                }
+            }
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "There is nothing scheduled",
-                fontFamily = FontFamily.SansSerif,
-                fontWeight = FontWeight.Bold, // bold
-                color = Color.Black // black
-            )
+@Composable
+fun TaskCard(
+    task: TaskEntity,
+    onCheckedChange: (Boolean) -> Unit = {}
+) {
 
-            Text(
-                text = "Try adding a new activity",
-                fontFamily = FontFamily.SansSerif,
-                fontWeight = FontWeight.Normal,
-                color = Color.Gray ,
-                modifier = Modifier.padding(top = 10.dp)
+    var isChecked by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .padding(start = 10.dp, end = 10.dp , top = 6.dp, bottom = 6.dp)
+            .fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            // ---------------------------
+            // CATEGORY ICON
+            // ---------------------------
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(
+                        Color(task.categoryColor ?: Color.LightGray.toArgb())
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = task.categoryIcon ?: R.drawable.category),
+                    contentDescription = null,
+                    modifier = Modifier.size(28.dp),
+                    colorFilter = ColorFilter.tint(Color.White)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // ---------------------------
+            // TEXTS (Task Name + Category + Priority)
+            // ---------------------------
+            Column(modifier = Modifier.weight(1f)) {
+
+                // Task Name (Bold)
+                Text(
+                    text = task.category,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(start = 3.dp)
+                )
+
+                if (task.priority > 0) {
+                    Text(
+                        text = "Priority: ${task.priority}",
+                        fontSize = 12.sp,
+                        color = Color.White,
+                        modifier = Modifier
+                            .padding(top = 6.dp)
+                            .background(
+                                color = Color(task.categoryColor ?: Color.LightGray.toArgb()),     // 🌟 your chip background color
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp) // inner padding
+                    )
+                }
+
+
+            }
+
+
+            if (task.time.isNotEmpty()) {
+                Text(
+                    text = task.time,
+                    fontSize = 12.sp,
+                    color = Color(0xFF4CAF50), // green shade
+                    modifier = Modifier.padding(end = 10.dp)
+                )
+            }
+
+
+            if (!isChecked && task.isPending) {
+                Icon(
+                    painter = painterResource(id = R.drawable.pending),
+                    contentDescription = "",
+                    tint = MeronSoft,
+                    modifier = Modifier
+                        .size(26.dp)
+                        .clickable {
+                            isChecked = true           // enable checkbox
+                            onCheckedChange(true)
+                        }
+                )
+            } else {
+                CircleCheckBox(
+                    checked = isChecked,
+                    onCheckedChange = {
+                        isChecked = it
+                        onCheckedChange(it)
+                    }
+                )
+            }
+
+        }
+    }
+}
+
+@Composable
+fun CircleCheckBox(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+
+    val borderColor = if (checked) Color(0xFF4CAF50) else Color.Gray
+    val checkColor = Color(0xFF4CAF50) // light green
+    val backgroundColor = if (checked) Color(0x334CAF50) else Color.Transparent
+
+    Box(
+        modifier = Modifier
+            .size(24.dp)
+            .clip(CircleShape)
+            .background(backgroundColor)
+            .border(2.dp, borderColor, CircleShape)
+            .clickable { onCheckedChange(!checked) },
+        contentAlignment = Alignment.Center
+    ) {
+        if (checked) {
+            Icon(
+                painter = painterResource(id = R.drawable.check), // your check icon
+                contentDescription = "Checked",
+                tint = checkColor,
+                modifier = Modifier.size(18.dp)
             )
         }
-
     }
 }
 
@@ -825,6 +1046,8 @@ fun TaskBottom(
                             id = taskId ?: 0,
                             taskName = taskName,
                             category = selectedCategory?.name ?: "Task",
+                            categoryIcon = selectedCategory?.icon ?: R.drawable.timer,
+                            categoryColor = (selectedCategory?.color ?: MeronSoft).toArgb(),
                             date = dateMillis,
                             time = reminder?.time ?: "",
                             reminderType = reminder?.reminderType ?: "none",
@@ -2100,33 +2323,35 @@ fun PriorityDefaultButton(onDismiss: () -> Unit) {
     }
 }
 
-
 fun convertDateToMillis(dateString: String): Long {
     return when (dateString) {
-
-        "Today" -> {
-            Calendar.getInstance().timeInMillis
-        }
-
-        "Tomorrow" -> {
-            Calendar.getInstance().apply {
-                add(Calendar.DAY_OF_YEAR, 1)
-            }.timeInMillis
-        }
-
+        "Today" -> Calendar.getInstance().timeInMillis
+        "Tomorrow" -> Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 1) }.timeInMillis
         else -> {
             try {
-                val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-                formatter.parse(dateString)?.time ?: System.currentTimeMillis()
+                val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) // fixed format
+                val date = formatter.parse(dateString)
+                date?.time ?: throw IllegalArgumentException("Invalid date")
             } catch (e: Exception) {
+                e.printStackTrace()
                 System.currentTimeMillis()
             }
         }
     }
 }
 
+
 fun formatMillisToDateString(millis: Long): String {
     val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     return formatter.format(Date(millis))
 }
 
+@Composable
+fun PlaceholderScreen(name: String) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = name)
+    }
+}

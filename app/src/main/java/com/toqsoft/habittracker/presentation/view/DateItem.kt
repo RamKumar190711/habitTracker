@@ -29,14 +29,24 @@ import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.util.Date
 import java.util.Locale
+import java.time.ZoneId
+import kotlinx.datetime.toJavaLocalDate
 
+fun LocalDate.toMillis(): Long {
+    return this.toJavaLocalDate()
+        .atStartOfDay(ZoneId.systemDefault())
+        .toInstant()
+        .toEpochMilli()
+}
 
+// -----------------------------
+// Data class for calendar dates
+// -----------------------------
 data class DateItem(
     val date: LocalDate,
     val dayName: String,
     val dayNumber: Int
 )
-
 
 fun generateDates(startYear: Int, endYear: Int): List<DateItem> {
     val list = mutableListOf<DateItem>()
@@ -66,6 +76,9 @@ fun generateDates(startYear: Int, endYear: Int): List<DateItem> {
     return list
 }
 
+// -----------------------------
+// Calendar Composable
+// -----------------------------
 @Composable
 fun Calendar(
     today: LocalDate,
@@ -85,7 +98,7 @@ fun Calendar(
     }
 
     LazyRow(
-        modifier = modifier.padding(8.dp), // use passed modifier
+        modifier = modifier.padding(8.dp),
         state = listState
     ) {
         items(dates) { item ->
@@ -150,3 +163,4 @@ fun formatDate(date: LocalDate): String {
     val monthName = months[date.monthNumber - 1]
     return "${date.dayOfMonth} $monthName ${date.year}"
 }
+

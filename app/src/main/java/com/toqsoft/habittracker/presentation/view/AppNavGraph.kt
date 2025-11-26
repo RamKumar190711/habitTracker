@@ -1,4 +1,4 @@
-package com.toqsoft.habittracker.presentation.view
+package com.toqsoft.habittracker.presentation.navigation
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -9,40 +9,55 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.toqsoft.habittracker.data.database.TaskDatabase
+import com.toqsoft.habittracker.presentation.view.*
 import com.toqsoft.habittracker.presentation.viewmodel.CategoryViewModel
 import com.toqsoft.habittracker.presentation.viewmodel.TaskViewModel
 import com.toqsoft.habittracker.presentation.viewmodel.TaskViewModelFactory
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AppNavGraph(navController: NavHostController,
-                categoryViewModel: CategoryViewModel
+fun AppNavGraph(
+    navController: NavHostController,
+    categoryViewModel: CategoryViewModel
 ) {
-
     NavHost(
         navController = navController,
         startDestination = "home"
     ) {
+        // Home screen with drawer and bottom navigation
         composable("home") { HomeScreen(navController) }
+
+        // Task screen
         composable("task") {
             val context = LocalContext.current
             val db = TaskDatabase.getDatabase(context)
             val taskDao = db.taskDao()
-
             val taskViewModel: TaskViewModel = viewModel(
                 factory = TaskViewModelFactory(taskDao)
             )
+
             TaskBottom(
                 onCancel = { navController.popBackStack() },
                 onConfirm = { navController.popBackStack() },
-                navController =navController,
+                navController = navController,
                 viewModel = categoryViewModel,
                 taskViewModel = taskViewModel
-
             )
         }
-        composable("category") { CategoryScreen(
-            viewModel = categoryViewModel
-        ) }
+
+        // Category screen
+        composable("category") {
+            CategoryScreen(viewModel = categoryViewModel)
+        }
+
+        // Drawer destinations
+        composable("news") { PlaceholderScreen("News and Events") }
+        composable("timer") { TimerScreen() }
+        composable("customize") { PlaceholderScreen("Customize") }
+        composable("settings") { PlaceholderScreen("Settings") }
+        composable("account_backup") { AccountAndBackupsScreen() }
+        composable("premium") { PlaceholderScreen("Get Premium") }
+        composable("rate") { PlaceholderScreen("Rate this App") }
+        composable("contact") { PlaceholderScreen("Contact Us") }
     }
 }

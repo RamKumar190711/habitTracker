@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.navigation.compose.rememberNavController
+import com.toqsoft.habittracker.presentation.navigation.AppNavGraph
 import com.toqsoft.habittracker.presentation.viewmodel.CategoryViewModel
 
 class MainActivity : ComponentActivity() {

@@ -38,7 +38,7 @@ fun TimerScreen() {
     var currentTime by remember { mutableStateOf(0L) }
     var timerState by remember { mutableStateOf<TimerState>(TimerState.Idle) }
     var selectedTab by remember { mutableStateOf("Stopwatch") }
-    var lastTime by remember { mutableStateOf<String?>(null) }
+    var lastTime by remember { mutableStateOf<String?>  (null) }
     val showCount = selectedTab == "Countdown"
 
     // Stopwatch ticking
