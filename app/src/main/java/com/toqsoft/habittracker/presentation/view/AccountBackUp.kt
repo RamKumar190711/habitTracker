@@ -30,7 +30,7 @@ val BackgroundColor = Color(0xFFFFF9FA)
 fun AccountAndBackupsScreen() {
     Scaffold(
         topBar = { AppToolbar() },
-        containerColor = BackgroundColor
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -79,7 +79,7 @@ fun AppToolbar() {
                 )
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundColor)
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
     )
 }
 
@@ -116,7 +116,7 @@ fun CloudBackupSection() {
                 .fillMaxWidth()
                 .height(50.dp)
         ) {
-            Text("UPLOAD BACKUP", color = Color.White, fontWeight = FontWeight.Bold)
+            Text("UPLOAD BACKUP", color = MaterialTheme.colorScheme.background, fontWeight = FontWeight.Bold)
         }
         Spacer(modifier = Modifier.height(10.dp))
 
@@ -195,7 +195,7 @@ fun AutomaticCloudBackupFeature() {
             checked = isChecked,
             onCheckedChange = { isChecked = it },
             colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
+                checkedThumbColor = MaterialTheme.colorScheme.background,
                 checkedTrackColor = PrimaryColor,
                 uncheckedThumbColor = Color.LightGray,
                 uncheckedTrackColor = Color.Gray

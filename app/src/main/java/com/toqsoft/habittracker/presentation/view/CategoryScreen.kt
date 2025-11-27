@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
@@ -94,6 +95,8 @@ fun CategoryScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+
             .padding(WindowInsets.safeContent.asPaddingValues())
     ) {
 
@@ -148,7 +151,7 @@ fun CategoryScreen(
                                 painter = painterResource(id = category.icon ?: R.drawable.category),
                                 contentDescription = null,
                                 modifier = Modifier.size(28.dp),
-                                colorFilter = ColorFilter.tint(Color.White)
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.background)
                             )
                         }
 
@@ -160,7 +163,8 @@ fun CategoryScreen(
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.background
                         )
 
                         Text(
@@ -182,7 +186,8 @@ fun CategoryScreen(
             text = "Default categories",
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 20.dp, start = 10.dp)
+            modifier = Modifier.padding(top = 20.dp, start = 10.dp),
+            color = MaterialTheme.colorScheme.background
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -211,7 +216,7 @@ fun CategoryScreen(
                             painter = painterResource(id = category.icon),
                             contentDescription = null,
                             modifier = Modifier.size(28.dp),
-                            colorFilter = ColorFilter.tint(Color.White)
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.background)
                         )
                     }
 
@@ -223,7 +228,8 @@ fun CategoryScreen(
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.background
                     )
 
                     Text(
@@ -252,7 +258,7 @@ fun CategoryScreen(
         ) {
             Text(
                 text = "New Category",
-                color = Color.White,
+                color = MaterialTheme.colorScheme.background,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -353,7 +359,7 @@ fun BottomSheetCategory(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.background,
     ) {
         Column(
             modifier = Modifier.padding(
@@ -505,7 +511,7 @@ fun CategoryNameDialog(
 ) {
     AlertDialog(
         onDismissRequest = onCancel,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.background,
         title = {},
         text = {
             OutlinedTextField(
@@ -518,8 +524,8 @@ fun CategoryNameDialog(
                     unfocusedIndicatorColor = MeronWarm,
                     focusedLabelColor = MeronWarm,
                     cursorColor = MeronWarm,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
+                    focusedContainerColor = MaterialTheme.colorScheme.background,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
@@ -545,7 +551,7 @@ fun CategoryIconDialog(
 
     AlertDialog(
         onDismissRequest = onCancel,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.background,
         title = {
             Text(
                 text = "Category Icon",
@@ -622,7 +628,7 @@ fun CategoryColorDialog(
 ) {
     AlertDialog(
         onDismissRequest = onCancel,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.background,
         title = {
             Text(
                 text = "Choose Category Color",
@@ -698,7 +704,7 @@ fun CategoryDialog(
             onDismissRequest = onDismiss,
             confirmButton = {},
             dismissButton = {},
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.background,
             text = {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
@@ -789,7 +795,7 @@ fun CategoryItem(category: Category, onClick: () -> Unit) {
                 painter = painterResource(id = category.icon ?: R.drawable.category),
                 contentDescription = null,
                 modifier = Modifier.size(28.dp),
-                colorFilter = ColorFilter.tint(Color.White)
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.background)
             )
         }
 

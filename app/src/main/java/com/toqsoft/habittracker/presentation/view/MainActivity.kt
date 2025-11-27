@@ -7,9 +7,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.toqsoft.habittracker.presentation.navigation.AppNavGraph
 import com.toqsoft.habittracker.presentation.viewmodel.CategoryViewModel
+import com.toqsoft.habittracker.presentation.viewmodel.ThemeViewModel
+import com.toqsoft.habittracker.ui.theme.HabitTrackerTheme
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -17,11 +22,19 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
          val categoryViewModel: CategoryViewModel by viewModels()
+        val themeViewModel: ThemeViewModel by viewModels()
+
 
         setContent {
+            val isDarkThemeEnabled by themeViewModel.isDarkTheme.collectAsState()
+
             val navController = rememberNavController()
-            AppNavGraph(navController,
-                categoryViewModel = categoryViewModel)
+            HabitTrackerTheme(darkTheme = isDarkThemeEnabled) {
+            AppNavGraph(
+                    navController,
+                    categoryViewModel = categoryViewModel
+                )
+            }
         }
     }
 }

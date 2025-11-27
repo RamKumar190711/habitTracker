@@ -53,8 +53,8 @@ fun AppNavGraph(
         // Drawer destinations
         composable("news") { PlaceholderScreen("News and Events") }
         composable("timer") { TimerScreen() }
-        composable("customize") { PlaceholderScreen("Customize") }
-        composable("settings") { PlaceholderScreen("Settings") }
+        composable("customize") {CustomizeScreen() }
+        composable("settings") { SettingsScreen() }
         composable("account_backup") { AccountAndBackupsScreen() }
         composable("premium") { PlaceholderScreen("Get Premium") }
         composable("rate") { PlaceholderScreen("Rate this App") }

@@ -53,14 +53,14 @@ fun TimerScreen() {
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Timer") },
-            colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color.White)
+            colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
         ) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(color = Color.White),
+                .background(color = MaterialTheme.colorScheme.background),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(32.dp))
@@ -76,7 +76,7 @@ fun TimerScreen() {
                     "Countdown" -> CountdownMainScreen(
                         showCount = showCount
                     )
-                    "Intervals" -> Text("Intervals Setup", color = Color.Gray)
+                    "Intervals" -> Text("Intervals Setup", color = MaterialTheme.colorScheme.onBackground)
                 }
             }
 
@@ -209,7 +209,7 @@ fun TimerDisplay(currentTime: Long, timerState: TimerState) {
             text = timeString,
             fontSize = 40.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
@@ -407,13 +407,14 @@ fun CountdownTimerSetupScreen(onStart: (Long) -> Unit = {}) {
             enabled = isStartEnabled, // will now enable automatically after setting time
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFFD81B60),
-                contentColor = Color.White
+                contentColor =MaterialTheme.colorScheme.onPrimary
             ),
             modifier = Modifier
                 .padding(top = 24.dp)
                 .width(200.dp)
         ) {
-            Text("▶ START", fontWeight = FontWeight.Bold)
+            Text("▶ START", fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground)
         }
     }
 }
@@ -507,7 +508,7 @@ fun TimePickerColumn(
         Text(
             text = label,
             fontSize = 14.sp,
-            color = Color.Black,
+            color =MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(top = 8.dp)
         )
     }

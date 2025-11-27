@@ -167,7 +167,7 @@ fun HomeScreen(navController: NavHostController) {
         drawerContent = {
             ModalDrawerSheet(
                 modifier = Modifier.fillMaxHeight(),
-                drawerContainerColor  = Color.White
+                drawerContainerColor  = MaterialTheme.colorScheme.background
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
@@ -272,7 +272,7 @@ fun HomeScreen(navController: NavHostController) {
                     )
                 }
             },
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.background
         ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
                 when (selectedRoute) {
@@ -307,7 +307,7 @@ fun ActivitySearchTopBar(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
     ) {
         Row(
@@ -535,7 +535,7 @@ fun TaskCard(
         modifier = Modifier
             .padding(start = 10.dp, end = 10.dp , top = 6.dp, bottom = 6.dp)
             .fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
 
@@ -678,7 +678,7 @@ fun ModalBottomSheetExample(
     ModalBottomSheet(
         onDismissRequest = { onDismiss() },
         sheetState = sheetState,
-        containerColor = Color.White
+        containerColor =MaterialTheme.colorScheme.background
     ) {
 
         Column(
@@ -720,7 +720,7 @@ fun ModalBottomSheetExample(
                         Text(
                             text = title,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black,
+                            color = MaterialTheme.colorScheme.background,
                             fontSize = 14.sp
                         )
                         Text(
@@ -810,7 +810,7 @@ fun TaskBottom(
 
 
     Box(
-        modifier = Modifier.fillMaxSize().background(Color.White)
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
     ) {
 
         Column(
@@ -841,8 +841,8 @@ fun TaskBottom(
                     unfocusedIndicatorColor = MeronWarm,
                     focusedLabelColor = MeronWarm,
                     cursorColor = MeronWarm,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
+                    focusedContainerColor = MaterialTheme.colorScheme.background,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.background
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -862,7 +862,8 @@ fun TaskBottom(
                     colorFilter = ColorFilter.tint(MeronSoft)
                 )
 
-                Text("Category", modifier = Modifier.padding(start = 10.dp))
+                Text("Category", modifier = Modifier.padding(start = 10.dp),
+                    color = MaterialTheme.colorScheme.onBackground)
 
                 Spacer(Modifier.weight(1f))
 
@@ -893,7 +894,7 @@ fun TaskBottom(
                     colorFilter = ColorFilter.tint(MeronSoft)
                 )
 
-                Text("Date", modifier = Modifier.padding(start = 10.dp))
+                Text("Date", modifier = Modifier.padding(start = 10.dp), color = MaterialTheme.colorScheme.onBackground)
                 Spacer(modifier = Modifier.weight(1f))
 
                 Card(colors = CardDefaults.cardColors(containerColor = MeronUltraLight)) {
@@ -919,7 +920,7 @@ fun TaskBottom(
                     colorFilter = ColorFilter.tint(MeronSoft)
                 )
 
-                Text("Time & Reminder", modifier = Modifier.padding(start = 10.dp))
+                Text("Time & Reminder", modifier = Modifier.padding(start = 10.dp), color = MaterialTheme.colorScheme.onBackground)
                 Spacer(modifier = Modifier.weight(1f))
 
                 Card(colors = CardDefaults.cardColors(containerColor = MeronUltraLight)) {
@@ -947,7 +948,8 @@ fun TaskBottom(
                 Text(
                     text = "Checklist",
                     fontFamily = FontFamily.SansSerif,
-                    modifier = Modifier.padding(start = 10.dp)
+                    modifier = Modifier.padding(start = 10.dp),
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -974,7 +976,7 @@ fun TaskBottom(
                     modifier = Modifier.size(24.dp),
                     colorFilter = ColorFilter.tint(MeronSoft)
                 )
-                Text("Priority", modifier = Modifier.padding(start = 10.dp))
+                Text("Priority", modifier = Modifier.padding(start = 10.dp), color = MaterialTheme.colorScheme.onBackground)
                 Spacer(modifier = Modifier.weight(1f))
                 Card(colors = CardDefaults.cardColors(containerColor = MeronUltraLight)) {
                     Text(
@@ -999,7 +1001,7 @@ fun TaskBottom(
                 )
 
                 Column {
-                    Text("Pending task", modifier = Modifier.padding(start = 10.dp))
+                    Text("Pending task", modifier = Modifier.padding(start = 10.dp), color = MaterialTheme.colorScheme.onBackground)
                     Text(
                         "Shown every day until completed.",
                         fontSize = 10.sp,
@@ -1190,7 +1192,7 @@ fun HabitTrackerTopBar(
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.White, // <- white background
+            containerColor = MaterialTheme.colorScheme.background, // <- white background
             titleContentColor = MeronSoft,
             actionIconContentColor = MeronSoft,
             navigationIconContentColor = MeronSoft
@@ -1205,7 +1207,7 @@ fun BottomNavigationBar(
     onItemSelected: (BottomNavItem) -> Unit
 ) {
     NavigationBar(
-        containerColor = Color.White, // <- white background
+        containerColor = MaterialTheme.colorScheme.background, // <- white background
         contentColor = MeronSoft       // <- icon/text color
     ) {
         items.forEach { item ->
@@ -1261,7 +1263,7 @@ fun CustomDatePicker(
 
     // Calendar colors
     val datePickerColors = DatePickerDefaults.colors(
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.background,
         headlineContentColor = MeronSoft,
         titleContentColor = MeronSoft,
         weekdayContentColor = MeronSoft,
@@ -1290,7 +1292,7 @@ fun CustomDatePicker(
             onDismissRequest = onDismiss,
 
             colors = DatePickerDefaults.colors(
-                containerColor = Color.White // ← FULL WHITE DIALOG INCLUDING ACTION ROW
+                containerColor = MaterialTheme.colorScheme.background // ← FULL WHITE DIALOG INCLUDING ACTION ROW
             ),
 
             confirmButton = {
@@ -1300,7 +1302,7 @@ fun CustomDatePicker(
                         onDismiss()
                     },
                     colors = ButtonDefaults.textButtonColors(
-                        containerColor = Color.White,
+                        containerColor =MaterialTheme.colorScheme.background,
                         contentColor = MeronSoft
                     )
                 ) {
@@ -1312,7 +1314,7 @@ fun CustomDatePicker(
                 TextButton(
                     onClick = onDismiss,
                     colors = ButtonDefaults.textButtonColors(
-                        containerColor = Color.White,
+                        containerColor = MaterialTheme.colorScheme.background,
                         contentColor = MeronSoft
                     )
                 ) {
@@ -1590,7 +1592,7 @@ fun ReminderAlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {},
         dismissButton = {},
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.background,
         text = {
             Column(modifier = modifier.fillMaxWidth().padding(4.dp)) {
 
@@ -1697,7 +1699,7 @@ fun ReminderAlertDialog(
                     onClick = onDismiss,
                     modifier = Modifier.fillMaxWidth().height(44.dp),
                     colors = ButtonDefaults.textButtonColors(
-                        containerColor = Color.White,
+                        containerColor = MaterialTheme.colorScheme.background,
                         contentColor = MeronSoft
                     )
                 ) {
@@ -2247,7 +2249,7 @@ fun PriorityAlertDialog(
             }
         },
         shape = RoundedCornerShape(12.dp),
-        containerColor = Color.White
+        containerColor = MaterialTheme.colorScheme.background
     )
 }
 
