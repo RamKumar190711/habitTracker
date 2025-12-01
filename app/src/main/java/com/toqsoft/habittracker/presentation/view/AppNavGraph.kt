@@ -13,12 +13,15 @@ import com.toqsoft.habittracker.presentation.view.*
 import com.toqsoft.habittracker.presentation.viewmodel.CategoryViewModel
 import com.toqsoft.habittracker.presentation.viewmodel.TaskViewModel
 import com.toqsoft.habittracker.presentation.viewmodel.TaskViewModelFactory
+import com.toqsoft.habittracker.presentation.viewmodel.ThemeViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
-    categoryViewModel: CategoryViewModel
+    categoryViewModel: CategoryViewModel,
+    themeViewModel: ThemeViewModel
+
 ) {
     NavHost(
         navController = navController,
@@ -53,7 +56,7 @@ fun AppNavGraph(
         // Drawer destinations
         composable("news") { PlaceholderScreen("News and Events") }
         composable("timer") { TimerScreen() }
-        composable("customize") {CustomizeScreen() }
+        composable("customize") {CustomizeScreen(themeViewModel = themeViewModel) }
         composable("settings") { SettingsScreen() }
         composable("account_backup") { AccountAndBackupsScreen() }
         composable("premium") { PlaceholderScreen("Get Premium") }

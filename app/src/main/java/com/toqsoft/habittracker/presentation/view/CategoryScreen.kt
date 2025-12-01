@@ -106,7 +106,7 @@ fun CategoryScreen(
                 painter = painterResource(id = R.drawable.back),
                 contentDescription = "back",
                 modifier = Modifier.size(20.dp),
-                colorFilter = ColorFilter.tint(MeronSoft)
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
             )
             Text(
                 text = "Categories",
@@ -144,7 +144,7 @@ fun CategoryScreen(
                             modifier = Modifier
                                 .size(60.dp)
                                 .clip(CircleShape)
-                                .background(category.color ?: MeronSoft),
+                                .background(category.color ?: MaterialTheme.colorScheme.primary),
                             contentAlignment = Alignment.Center
                         ) {
                             Image(
@@ -354,7 +354,7 @@ fun BottomSheetCategory(
     onOpenCateColor: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val circleColor = selectedColor ?: MeronSoft
+    val circleColor = selectedColor ?: MaterialTheme.colorScheme.primary
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -448,7 +448,7 @@ fun BottomSheetCategory(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                color = MeronWarm,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
@@ -520,10 +520,10 @@ fun CategoryNameDialog(
                 singleLine = true,
                 label = { Text("Category Name") },
                 colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = MeronWarm,
-                    unfocusedIndicatorColor = MeronWarm,
-                    focusedLabelColor = MeronWarm,
-                    cursorColor = MeronWarm,
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary,
                     focusedContainerColor = MaterialTheme.colorScheme.background,
                     unfocusedContainerColor = MaterialTheme.colorScheme.background
                 )
@@ -531,7 +531,7 @@ fun CategoryNameDialog(
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("OK", fontWeight = FontWeight.Bold, color = MeronWarm)
+                Text("OK", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
             }
         },
         dismissButton = {
@@ -593,7 +593,7 @@ fun CategoryIconDialog(
                             .size(50.dp)
                             .clip(CircleShape)
                             .background(
-                                if (isSelected) MeronWarm.copy(0.15f)
+                                if (isSelected) MaterialTheme.colorScheme.primary.copy(0.15f)
                                 else Color(0xFFF5F5F5)
                             )
                             .clickable { onIconSelected(iconRes) },
@@ -604,7 +604,7 @@ fun CategoryIconDialog(
                             contentDescription = "icon",
                             modifier = Modifier.size(28.dp),
                             colorFilter = if (isSelected)
-                                ColorFilter.tint(MeronWarm)
+                                ColorFilter.tint(MaterialTheme.colorScheme.primary)
                             else ColorFilter.tint(Color.Black)
                         )
                     }
@@ -672,7 +672,7 @@ fun CategoryColorDialog(
                             .background(color)
                             .border(
                                 width = if (isSelected) 3.dp else 0.dp,
-                                color = if (isSelected) MeronWarm else Color.Transparent,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
                                 shape = CircleShape
                             )
                             .clickable { onColorSelected(color) },

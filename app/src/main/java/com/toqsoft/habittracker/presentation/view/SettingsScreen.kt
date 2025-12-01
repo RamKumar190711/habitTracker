@@ -22,7 +22,7 @@ data class SettingsItem(
 
 @Composable
 fun SettingsScreen() {
-    val iconColor = Color(0xFFC74A4B)
+    val iconColor = MaterialTheme.colorScheme.primary
 
     val settingsItems = listOf(
         SettingsItem(

@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.toqsoft.habittracker.R
+import com.toqsoft.habittracker.ui.theme.MeronSoft
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 
@@ -183,15 +184,15 @@ fun TimerDisplay(currentTime: Long, timerState: TimerState) {
 
     val circleColor by if (timerState is TimerState.Running) {
         rememberInfiniteTransition().animateColor(
-            initialValue = Color(0xFFD81B60),
-            targetValue = Color(0xFFF06292),
+            initialValue = MaterialTheme.colorScheme.primary,
+            targetValue = MaterialTheme.colorScheme.primary,
             animationSpec = infiniteRepeatable(
                 animation = tween(durationMillis = 500, easing = LinearEasing),
                 repeatMode = RepeatMode.Reverse
             )
         )
     } else {
-        mutableStateOf(if (timerState is TimerState.Paused) Color(0xFFF8BBD0) else Color(0xFFD81B60))
+        mutableStateOf(if (timerState is TimerState.Paused) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary)
     }
 
     Box(
@@ -245,7 +246,7 @@ fun TimerTabs(selectedTab: String, onTabSelected: (String) -> Unit) {
 
 @Composable
 fun TimerTabButton(text: String, isSelected: Boolean) {
-    val contentColor = if (isSelected) Color(0xFFD81B60) else Color(0xFF6E6E6E)
+    val contentColor = if (isSelected) Color(0xFFD81B60) else MaterialTheme.colorScheme.primary
     val imageResId = when (text) {
         "Stopwatch" -> R.drawable.timer
         "Countdown" -> R.drawable.countdown
@@ -290,7 +291,7 @@ fun LastRecordCard(lastTime: String? = null) {
                     Icon(
                         painter = painterResource(id = R.drawable.timer),
                         contentDescription = "Last record",
-                        tint = Color(0xFFD81B60),
+                        tint =MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -406,7 +407,7 @@ fun CountdownTimerSetupScreen(onStart: (Long) -> Unit = {}) {
             onClick = { onStart(totalTimeMillis) },
             enabled = isStartEnabled, // will now enable automatically after setting time
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFD81B60),
+                containerColor = MaterialTheme.colorScheme.primary,
                 contentColor =MaterialTheme.colorScheme.onPrimary
             ),
             modifier = Modifier
@@ -558,7 +559,7 @@ fun CircularCountdownTimer(
             )
 
             drawArc(
-                color = Color(0xFFE14A63),
+                color = MeronSoft,
                 startAngle = -90f,
                 sweepAngle = 360f * progress,
                 useCenter = false,

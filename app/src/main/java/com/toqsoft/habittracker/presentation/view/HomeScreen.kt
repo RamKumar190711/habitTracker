@@ -113,7 +113,6 @@ import com.toqsoft.habittracker.presentation.viewmodel.ReminderViewModel
 import com.toqsoft.habittracker.presentation.viewmodel.TaskViewModel
 import com.toqsoft.habittracker.presentation.viewmodel.TaskViewModelFactory
 import com.toqsoft.habittracker.ui.theme.MeronLight
-import com.toqsoft.habittracker.ui.theme.MeronSoft
 import com.toqsoft.habittracker.ui.theme.MeronUltraLight
 import com.toqsoft.habittracker.ui.theme.MeronWarm
 import kotlinx.coroutines.launch
@@ -129,6 +128,7 @@ import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import androidx.compose.ui.graphics.toArgb
+import com.toqsoft.habittracker.ui.theme.MeronSoft
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.*
 
@@ -204,7 +204,7 @@ fun HomeScreen(navController: NavHostController) {
                                     painter = painterResource(id = icon),
                                     contentDescription = item.title,
                                     modifier = Modifier.size(24.dp),
-                                    tint = Color.Gray
+                                    tint = MaterialTheme.colorScheme.primary
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                             }
@@ -614,7 +614,7 @@ fun TaskCard(
                 Icon(
                     painter = painterResource(id = R.drawable.pending),
                     contentDescription = "",
-                    tint = MeronSoft,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .size(26.dp)
                         .clickable {
@@ -859,7 +859,7 @@ fun TaskBottom(
                     painter = painterResource(id = R.drawable.category),
                     contentDescription = "",
                     modifier = Modifier.size(24.dp),
-                    colorFilter = ColorFilter.tint(MeronSoft)
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
                 )
 
                 Text("Category", modifier = Modifier.padding(start = 10.dp),
@@ -869,14 +869,14 @@ fun TaskBottom(
 
                 Text(
                     text = selectedCategory?.name ?: "Task",
-                    color = selectedCategory?.color ?: MeronSoft
+                    color = selectedCategory?.color ?: MaterialTheme.colorScheme.primary
                 )
 
                 Image(
                     painter = painterResource(id = selectedCategory?.icon ?: R.drawable.timer),
                     contentDescription = "",
                     modifier = Modifier.padding(start = 6.dp).size(24.dp),
-                    colorFilter = ColorFilter.tint(selectedCategory?.color ?: MeronSoft)
+                    colorFilter = ColorFilter.tint(selectedCategory?.color ?: MaterialTheme.colorScheme.primary)
                 )
             }
             MildDivider()
@@ -891,7 +891,7 @@ fun TaskBottom(
                     painter = painterResource(id = R.drawable.calendar),
                     contentDescription = "",
                     modifier = Modifier.size(24.dp),
-                    colorFilter = ColorFilter.tint(MeronSoft)
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
                 )
 
                 Text("Date", modifier = Modifier.padding(start = 10.dp), color = MaterialTheme.colorScheme.onBackground)
@@ -900,7 +900,7 @@ fun TaskBottom(
                 Card(colors = CardDefaults.cardColors(containerColor = MeronUltraLight)) {
                     Text(
                         text = getSelectedDate,
-                        color = MeronSoft,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(12.dp)
                     )
                 }
@@ -917,7 +917,7 @@ fun TaskBottom(
                     painter = painterResource(id = R.drawable.notification),
                     contentDescription = "",
                     modifier = Modifier.size(24.dp),
-                    colorFilter = ColorFilter.tint(MeronSoft)
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
                 )
 
                 Text("Time & Reminder", modifier = Modifier.padding(start = 10.dp), color = MaterialTheme.colorScheme.onBackground)
@@ -926,7 +926,7 @@ fun TaskBottom(
                 Card(colors = CardDefaults.cardColors(containerColor = MeronUltraLight)) {
                     Text(
                         text = remainderCount,
-                        color = MeronSoft,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(12.dp)
                     )
                 }
@@ -942,7 +942,7 @@ fun TaskBottom(
                     painter = painterResource(id = R.drawable.checklist),
                     contentDescription = "Checklist",
                     modifier = Modifier.size(24.dp),
-                    colorFilter = ColorFilter.tint(MeronSoft)
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
                 )
 
                 Text(
@@ -958,7 +958,7 @@ fun TaskBottom(
                     Text(
                         text = "0",
                         fontFamily = FontFamily.SansSerif,
-                        color = MeronSoft,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(12.dp)
                     )
                 }
@@ -974,14 +974,14 @@ fun TaskBottom(
                     painter = painterResource(id = R.drawable.priority),
                     contentDescription = "",
                     modifier = Modifier.size(24.dp),
-                    colorFilter = ColorFilter.tint(MeronSoft)
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
                 )
                 Text("Priority", modifier = Modifier.padding(start = 10.dp), color = MaterialTheme.colorScheme.onBackground)
                 Spacer(modifier = Modifier.weight(1f))
                 Card(colors = CardDefaults.cardColors(containerColor = MeronUltraLight)) {
                     Text(
                         text = priorityCount,
-                        color = MeronSoft,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(12.dp)
                     )
                 }
@@ -997,7 +997,7 @@ fun TaskBottom(
                     painter = painterResource(id = R.drawable.pending_task),
                     contentDescription = "",
                     modifier = Modifier.size(26.dp),
-                    colorFilter = ColorFilter.tint(MeronSoft)
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
                 )
 
                 Column {
@@ -1015,7 +1015,7 @@ fun TaskBottom(
                 RadioButton(
                     selected = isPendingState,
                     onClick = { isPendingState = !isPendingState },
-                    colors = RadioButtonDefaults.colors(selectedColor = MeronSoft)
+                    colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary)
                 )
             }
             MildDivider()
@@ -1156,7 +1156,7 @@ fun HabitTrackerTopBar(
                     painter = painterResource(id = R.drawable.menu),
                     contentDescription = "Menu",
                     modifier = Modifier.size(22.dp),
-                    tint = MeronSoft
+                    tint = MaterialTheme.colorScheme.primary
 
                 )
             }
@@ -1166,36 +1166,36 @@ fun HabitTrackerTopBar(
                 Icon( painter = painterResource(id = R.drawable.search),
                     contentDescription = "Search",
                     modifier = Modifier.size(20.dp),
-                    tint = MeronSoft
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
             IconButton(onClick = onAction2) {
                 Icon( painter = painterResource(id = R.drawable.filter),
                     contentDescription = "Filter",
                     modifier = Modifier.size(20.dp),
-                    tint = MeronSoft
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
             IconButton(onClick = onAction3) {
                 Icon( painter = painterResource(id = R.drawable.calendar),
                     contentDescription = "calendar",
                     modifier = Modifier.size(20.dp),
-                    tint = MeronSoft
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
             IconButton(onClick = onAction4) {
                 Icon( painter = painterResource(id = R.drawable.information),
                     contentDescription = "info",
                     modifier = Modifier.size(20.dp),
-                    tint = MeronSoft
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.background, // <- white background
-            titleContentColor = MeronSoft,
-            actionIconContentColor = MeronSoft,
-            navigationIconContentColor = MeronSoft
+            titleContentColor = MaterialTheme.colorScheme.primary,
+            actionIconContentColor = MaterialTheme.colorScheme.primary,
+            navigationIconContentColor = MaterialTheme.colorScheme.primary
         )
     )
 }
@@ -1208,7 +1208,7 @@ fun BottomNavigationBar(
 ) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.background, // <- white background
-        contentColor = MeronSoft       // <- icon/text color
+        contentColor = MaterialTheme.colorScheme.primary       // <- icon/text color
     ) {
         items.forEach { item ->
             NavigationBarItem(
@@ -1239,7 +1239,7 @@ fun GradientFAB(onClick: () -> Unit, iconRes: Int) {
             modifier = Modifier
                 .size(56.dp)
                 .background(
-                    brush = Brush.linearGradient(listOf(MeronWarm, MeronLight)),
+                    brush = Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary)),
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -1264,24 +1264,24 @@ fun CustomDatePicker(
     // Calendar colors
     val datePickerColors = DatePickerDefaults.colors(
         containerColor = MaterialTheme.colorScheme.background,
-        headlineContentColor = MeronSoft,
-        titleContentColor = MeronSoft,
-        weekdayContentColor = MeronSoft,
-        subheadContentColor = MeronSoft,
+        headlineContentColor = MaterialTheme.colorScheme.primary,
+        titleContentColor = MaterialTheme.colorScheme.primary,
+        weekdayContentColor = MaterialTheme.colorScheme.primary,
+        subheadContentColor = MaterialTheme.colorScheme.primary,
 
-        selectedDayContainerColor = MeronSoft,
+        selectedDayContainerColor = MaterialTheme.colorScheme.primary,
         selectedDayContentColor = Color.White,
 
-        todayDateBorderColor = MeronSoft,
-        todayContentColor = MeronSoft,
+        todayDateBorderColor = MaterialTheme.colorScheme.primary,
+        todayContentColor = MaterialTheme.colorScheme.primary,
 
-        dayContentColor = MeronSoft,
-        disabledDayContentColor = MeronSoft.copy(alpha = 0.4f)
+        dayContentColor = MaterialTheme.colorScheme.primary,
+        disabledDayContentColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
     )
 
     // Header colors (Month–Year row)
     val headerTheme = MaterialTheme.colorScheme.copy(
-        primary = MeronSoft,
+        primary = MaterialTheme.colorScheme.primary,
         onPrimary = Color.White,
         surface = Color.White
     )
@@ -1303,7 +1303,7 @@ fun CustomDatePicker(
                     },
                     colors = ButtonDefaults.textButtonColors(
                         containerColor =MaterialTheme.colorScheme.background,
-                        contentColor = MeronSoft
+                        contentColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Text("OK")
@@ -1315,7 +1315,7 @@ fun CustomDatePicker(
                     onClick = onDismiss,
                     colors = ButtonDefaults.textButtonColors(
                         containerColor = MaterialTheme.colorScheme.background,
-                        contentColor = MeronSoft
+                        contentColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Text("Cancel")
@@ -1371,7 +1371,7 @@ fun NewReminderDialog(
                     text = "New reminder",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MeronSoft,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
 
@@ -1391,7 +1391,7 @@ fun NewReminderDialog(
                 Text(
                     text = "Reminder time",
                     fontSize = 14.sp,
-                    color = MeronSoft,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
 
@@ -1403,7 +1403,7 @@ fun NewReminderDialog(
                 Text(
                     text = "Reminder type",
                     fontSize = 14.sp,
-                    color = MeronSoft,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(Modifier.height(10.dp))
@@ -1443,7 +1443,7 @@ fun NewReminderDialog(
                 Text(
                     text = "Reminder schedule",
                     fontSize = 14.sp,
-                    color = MeronSoft,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(Modifier.height(10.dp))
@@ -1472,7 +1472,7 @@ fun NewReminderDialog(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(50))
                                     .background(
-                                        if (selectedDays.contains(day)) MeronSoft else Color(0xFFEDEBEB)
+                                        if (selectedDays.contains(day)) MaterialTheme.colorScheme.primary else Color(0xFFEDEBEB)
                                     )
                                     .clickable {
                                         if (selectedDays.contains(day))
@@ -1506,10 +1506,10 @@ fun NewReminderDialog(
                         label = { Text("Enter days before") },
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = MeronSoft,
-                            unfocusedIndicatorColor = MeronSoft,
-                            focusedLabelColor = MeronSoft,
-                            cursorColor = MeronSoft
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            cursorColor = MaterialTheme.colorScheme.primary
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1534,7 +1534,7 @@ fun NewReminderDialog(
                             .clickable(onClick = onDismiss),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("CANCEL", color = MeronSoft, fontWeight = FontWeight.Bold)
+                        Text("CANCEL", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     }
 
                     Box(
@@ -1554,7 +1554,7 @@ fun NewReminderDialog(
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("CONFIRM", color = MeronSoft, fontWeight = FontWeight.Bold)
+                        Text("CONFIRM", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -1605,7 +1605,7 @@ fun ReminderAlertDialog(
                         painter = painterResource(id = R.drawable.timer),
                         contentDescription = "Reminder icon",
                         modifier = Modifier.size(28.dp),
-                        colorFilter = ColorFilter.tint(MeronSoft)
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
@@ -1675,7 +1675,7 @@ fun ReminderAlertDialog(
                     },
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MeronSoft)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
@@ -1700,7 +1700,7 @@ fun ReminderAlertDialog(
                     modifier = Modifier.fillMaxWidth().height(44.dp),
                     colors = ButtonDefaults.textButtonColors(
                         containerColor = MaterialTheme.colorScheme.background,
-                        contentColor = MeronSoft
+                        contentColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Text(text = "Close", fontWeight = FontWeight.Medium)
@@ -1775,7 +1775,7 @@ fun ReminderCard(
                     Icon(
                         painter = painterResource(id = R.drawable.cate_name),
                         contentDescription = "Edit",
-                        tint = MeronSoft,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -1804,7 +1804,7 @@ fun ScheduleRow(title: String, selected: Boolean, onClick: () -> Unit) {
         RadioButton(
             selected = selected,
             onClick = onClick,
-            colors = RadioButtonDefaults.colors(selectedColor = MeronSoft)
+            colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary)
         )
         Text(title, fontSize = 14.sp)
     }
@@ -1825,12 +1825,12 @@ fun ReminderTypeItem(label: String, icon: Int, selected: Boolean, onClick: () ->
             painter = painterResource(id = icon),
             contentDescription = null,
             modifier = Modifier.size(26.dp),
-            colorFilter = ColorFilter.tint(if (selected) MeronSoft else Color.Gray)
+            colorFilter = ColorFilter.tint(if (selected) MaterialTheme.colorScheme.primary else Color.Gray)
         )
         Text(
             text = label,
             fontSize = 12.sp,
-            color = if (selected) MeronSoft else Color.DarkGray,
+            color = if (selected) MaterialTheme.colorScheme.primary else Color.DarkGray,
             modifier = Modifier.padding(top = 4.dp)
         )
     }

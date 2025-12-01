@@ -1,5 +1,7 @@
 package com.toqsoft.habittracker.presentation.view
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -8,6 +10,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +51,7 @@ data class DateItem(
     val dayNumber: Int
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun generateDates(startYear: Int, endYear: Int): List<DateItem> {
     val list = mutableListOf<DateItem>()
     var current = LocalDate(startYear, 1, 1)
@@ -114,7 +118,7 @@ fun Calendar(
                     },
                 shape = RoundedCornerShape(18.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isSelected) MeronWarm else MeronLight
+                    containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary
                 )
             ) {
                 Column(
@@ -133,7 +137,7 @@ fun Calendar(
                     Card(
                         shape = RoundedCornerShape(8.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) MeronLight else MeronUltraLight
+                            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary
                         )
                     ) {
                         Text(

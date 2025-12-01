@@ -1,6 +1,7 @@
 package com.toqsoft.habittracker.presentation.viewmodel
 
 import android.app.Application
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.toqsoft.habittracker.data.model.ThemeDataStore
@@ -28,4 +29,13 @@ class ThemeViewModel(application: Application) : AndroidViewModel(application) {
             dataStore.saveDarkTheme(enabled)
         }
     }
+
+    private val _primaryColor = MutableStateFlow(Color(0xFFA52A2A))
+    val primaryColor: StateFlow<Color> = _primaryColor
+
+    fun setPrimaryColor(color: Color) {
+        _primaryColor.value = color
+    }
+
+
 }

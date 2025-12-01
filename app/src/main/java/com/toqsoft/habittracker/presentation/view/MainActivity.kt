@@ -27,12 +27,15 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val isDarkThemeEnabled by themeViewModel.isDarkTheme.collectAsState()
+            val primaryColor by themeViewModel.primaryColor.collectAsState()
 
             val navController = rememberNavController()
-            HabitTrackerTheme(darkTheme = isDarkThemeEnabled) {
+            HabitTrackerTheme(darkTheme = isDarkThemeEnabled,
+                primaryColor = primaryColor) {
             AppNavGraph(
                     navController,
-                    categoryViewModel = categoryViewModel
+                    categoryViewModel = categoryViewModel,
+                themeViewModel = themeViewModel
                 )
             }
         }
