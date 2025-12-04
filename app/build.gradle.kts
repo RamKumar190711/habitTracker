@@ -45,6 +45,7 @@ android {
 dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.foundation)
     val datetimeVersion = "0.5.0"
 
     implementation(libs.androidx.core.ktx)
@@ -76,5 +77,7 @@ dependencies {
     // Room compiler (for annotation processing / KAPT)
     kapt ("androidx.room:room-compiler:2.6.0")
 
+
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
 }
 

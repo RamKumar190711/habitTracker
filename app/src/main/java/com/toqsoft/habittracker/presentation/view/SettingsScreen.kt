@@ -4,6 +4,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,6 +27,9 @@ data class SettingsItem(
 @Composable
 fun SettingsScreen() {
     val iconColor = MaterialTheme.colorScheme.primary
+
+    var onclick by remember { mutableStateOf(false) }
+
 
     val settingsItems = listOf(
         SettingsItem(
@@ -44,7 +51,8 @@ fun SettingsScreen() {
         SettingsItem(
             title = "Lock Screen",
             icon = R.drawable.lock_phone,
-            contentDescription = "Lock Screen settings"
+            contentDescription = "Lock Screen settings",
+            onClick = {onclick = !onclick }
         ),
         SettingsItem(
             title = "Backups",
@@ -79,6 +87,10 @@ fun SettingsScreen() {
             }
         }
     )
+
+    if(onclick){
+        LockScreenSettings()
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -9,6 +9,7 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.toqsoft.habittracker.presentation.navigation.AppNavGraph
@@ -16,7 +17,7 @@ import com.toqsoft.habittracker.presentation.viewmodel.CategoryViewModel
 import com.toqsoft.habittracker.presentation.viewmodel.ThemeViewModel
 import com.toqsoft.habittracker.ui.theme.HabitTrackerTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
